@@ -14,3 +14,7 @@
 	path = ingadhoc/odoo-argentina-ee
 	url = https://github.com/ingadhoc/odoo-argentina-ee.git
 	branch = 15.0
+[submodule "ingadhoc/product"]
+	path = ingadhoc/product
+	url = https://github.com/ingadhoc/product.git
+	branch = 15.0
