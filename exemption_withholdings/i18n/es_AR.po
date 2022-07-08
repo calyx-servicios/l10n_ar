@@ -1,0 +1,120 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* exemption_withholdings
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 13.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-07-08 16:55+0000\n"
+"PO-Revision-Date: 2022-07-08 16:55+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__active_tax
+msgid "Active"
+msgstr "Activo"
+
+#. module: exemption_withholdings
+#: model:ir.model,name:exemption_withholdings.model_res_partner
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__create_date
+msgid "Created on"
+msgstr "Creado en"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__date_from
+msgid "Date from"
+msgstr "Desde"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__date_to
+msgid "Date to"
+msgstr "Hasta"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__display_name
+msgid "Display Name"
+msgstr "Mostrar Nombre"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_res_partner__exemption_withholding_ids
+#: model:ir.model.fields,field_description:exemption_withholdings.field_res_users__exemption_withholding_ids
+msgid "Exemption Withholding"
+msgstr "Exención de Retenciones"
+
+#. module: exemption_withholdings
+#: code:addons/exemption_withholdings/models/exemption_withholding.py:0
+#: model:ir.model,name:exemption_withholdings.model_exemption_withholding
+#: model_terms:ir.ui.view,arch_db:exemption_withholdings.view_partner_form
+#, python-format
+msgid "Exemption Withholdings"
+msgstr "Exención de Retenciones"
+
+#. module: exemption_withholdings
+#: model:ir.actions.act_window,name:exemption_withholdings.action_exemption_form
+msgid "Exemptions"
+msgstr "Exenciónes"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_account_payment_group__exempt_msj
+msgid "Exemptions Information"
+msgstr "Informacion de Exenciónes"
+
+#. module: exemption_withholdings
+#: model_terms:ir.ui.view,arch_db:exemption_withholdings.account_invoice_form
+msgid "Exemptions Withholdings:"
+msgstr "Exención de Retenciones"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__id
+msgid "ID"
+msgstr "ID"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding____last_update
+msgid "Last Modified on"
+msgstr "Última modificación en"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización realizada por"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__partner_id
+msgid "Partner"
+msgstr "Contacto"
+
+#. module: exemption_withholdings
+#: model:ir.model,name:exemption_withholdings.model_account_payment_group
+msgid "Payment Group"
+msgstr "Grupo de Pago"
+
+#. module: exemption_withholdings
+#: model:ir.model,name:exemption_withholdings.model_account_tax
+msgid "Tax"
+msgstr "Impuesto"
+
+#. module: exemption_withholdings
+#: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__account_tax_id
+msgid "Withholding"
+msgstr "Retencion"

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="exemption_withholding_tree" model="ir.ui.view">
+        <field name="model">exemption.withholding</field>
+        <field name="name">exemption.withholding.tree</field>
+        <field name="arch" type="xml">
+	        <tree>
+	            <field name="date_from"/>  
+	            <field name="date_to"/>
+	            <field name="account_tax_id"/>
+	            <field name="active_tax" widget="boolean_button"/>
+	        </tree>
+        </field>
+    </record>
+
+    <record id="exemption_withholding_form" model="ir.ui.view">
+        <field name="model">exemption.withholding</field>
+        <field name="name">exemption.withholding.form</field>
+        <field name="arch" type="xml">
+	        <form>
+	            <group>
+	                <field name="date_from"/>  
+	                <field name="date_to"/>
+	                <field name="account_tax_id"/>
+	                <field name="active_tax"/>
+	            </group>
+	        </form>
+        </field>
+    </record>
+
+    <record id="action_exemption_form" model="ir.actions.act_window">
+        <field name="name">Exemptions</field>
+        <field name="res_model">exemption.withholding</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain" eval="False"/> 
+        <field name="context">{'active_test': False}</field>
+        <field name="view_id" ref="exemption_withholding_tree"/>
+    </record>
+</odoo>
+
