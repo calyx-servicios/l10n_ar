@@ -15,7 +15,7 @@ class AccountMove(models.Model):
 
     def action_account_invoice_payment_group(self):
         self.ensure_one()
-        if self.state != 'open':
+        if self.state == 'cancel':
             raise ValidationError(_(
                 'You can only register payment if invoice is open'))
         return {
@@ -51,15 +51,15 @@ class AccountMove(models.Model):
         # ESTO SE PUEDE MEJORAR EN EL RENDIMIENTO
         for self_obj in self:
             list_id_delete = []
-            for tax_obj in self_obj.tax_line_ids:
+            for tax_obj in self_obj.line_ids:
                 for padron_type_obj in self_obj.partner_id.line_padron_type_ids:
-                    if padron_type_obj.account_tax_perception_id.id == tax_obj.tax_id.id:
-                        if tax_obj.base < padron_type_obj.minimum_base_perception or  tax_obj.amount < padron_type_obj.minimum_calcule_perception:
+                    if padron_type_obj.account_tax_perception_id.id == tax_obj.tax_line_id.id:
+                        if tax_obj.tax_line_id.withholding_non_taxable_amount < padron_type_obj.minimum_base_perception or  tax_obj.tax_line_id.amount < padron_type_obj.minimum_calcule_perception:
                             list_id_delete.append(tax_obj.id)
                             for invoice_line_obj in self_obj.invoice_line_ids:
-                                for line_tax_obj in invoice_line_obj.invoice_line_tax_ids:
+                                for line_tax_obj in invoice_line_obj.tax_ids:
                                     if line_tax_obj.id == padron_type_obj.account_tax_perception_id.id:
-                                        invoice_line_obj.invoice_line_tax_ids = [(3,  line_tax_obj.id )]
+                                        invoice_line_obj.tax_ids = [(3,  line_tax_obj.id )]
             for idss in list_id_delete:
-                self_obj.tax_line_ids = [(2,  idss )]
+                self_obj.line_ids = [(2,  idss )]
 
