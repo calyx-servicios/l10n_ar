@@ -10,8 +10,8 @@ class AccountTax(models.Model):
         for rec in self:
             for exempt_id in payment_group.partner_id.exemption_withholding_ids:
                 if exempt_id.active_tax and exempt_id.account_tax_id in rec and \
-                datetime.strptime(exempt_id.date_from, '%Y-%m-%d %H:%M:%S') < datetime.today() and\
-                datetime.strptime(exempt_id.date_to, '%Y-%m-%d %H:%M:%S') > datetime.today():
+                datetime.strftime(exempt_id.date_from, '%Y-%m-%d %H:%M:%S') < datetime.today() and\
+                datetime.strftime(exempt_id.date_to, '%Y-%m-%d %H:%M:%S') > datetime.today():
                     tax_exempt += exempt_id.account_tax_id
                 else:
                     continue;
