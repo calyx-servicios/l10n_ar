@@ -73,7 +73,7 @@ class AccountPadronRetentionPerceptionType(models.Model):
                             'payment_group_id': payment_group_obj.id,
                             'communication': self_obj.description,
                             'payment_type': 'outbound',
-                            'payment_method_id': 8,
+                            'payment_method_id': self.env.ref('account_withholding.account_payment_method_out_withholding'),
                             'boolean_check_payment_group': True,
                         }
                         payment = self.env['account.payment'].create(vals)
