@@ -12,7 +12,7 @@ class ResPartner(models.Model):
     @api.model
     def create(self, values):
         record = super(ResPartner, self).create(values)
-        if record.afip_responsability_type_id.code not in ('5', '7', '8', '9') and self.env['ir.config_parameter'].get_param('account_padron_withholding_perception.check_census_on_create'):
+        if record.l10n_ar_afip_responsibility_type_id.code not in ('5', '7', '8', '9') and self.env['ir.config_parameter'].get_param('account_padron_withholding_perception.check_census_on_create'):
             padrones = self.env['account.padron.retention.perception.type'].search([]).ids
             record.write({'line_padron_type_ids': [(6, 0, padrones)]})
         return record
@@ -31,7 +31,7 @@ class ResPartner(models.Model):
     def import_padron_server_partner(self, context={}):
         partner_dic={} #padron_type_id
         for partner_obj in self:  
-            partner_dic[partner_obj.main_id_number] = partner_obj
+            partner_dic[partner_obj.vat] = partner_obj
             context['partner_dic'] = partner_dic
             for padron_obj in partner_obj.line_padron_type_ids:
                 result_ids = self.env['account.import.padron.ret.perc'].search([

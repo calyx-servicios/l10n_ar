@@ -46,11 +46,11 @@ class AccountImportPadronRetPerc(models.Model):
         partner_dic = {}
         for import_obj in self:
             _logger.info("import_padron_server()--> for %s" % str(import_obj))
-            if 'partner_dic' in context:
+            if context and 'partner_dic' in context:
                 partner_dic = context['partner_dic']
             else:
                 for partner_obj in import_obj.padron_type_id.line_partner_ids:
-                    partner_dic[partner_obj.main_id_number] = partner_obj
+                    partner_dic[partner_obj.vat] = partner_obj
             date_from = str(import_obj.default_date_from)[
                 :4] + str(import_obj.default_date_from)[5:7] + str(import_obj.default_date_from)[8:10]
             date_to = str(import_obj.default_date_to)[
@@ -79,7 +79,7 @@ class AccountImportPadronRetPerc(models.Model):
                     vals = {
                         'import_padron_id': import_obj.id,
                         'padron_type_id': import_obj.padron_type_id.id,
-                        'cuit': partner_dic[line_dicc].main_id_number,
+                        'cuit': partner_dic[line_dicc].vat,
                         'partner_id': partner_dic[line_dicc].id,
                         'date_from': import_obj.default_date_from,
                         'date_to': import_obj.default_date_to,
@@ -114,7 +114,7 @@ class AccountImportPadronRetPerc(models.Model):
         where = where[:-1] + ') '
         # filtros de fechas que se comenta hasta que este bien la base de datos
         # importada
-        if False:  # date_to and date_from:
+        if date_to and date_from:
             date_to_string = str(date_to)[8:10] + \
                 str(date_to)[5:7] + str(date_to)[:4]
             date_from_string = str(date_from)[
@@ -245,7 +245,7 @@ class AccountImportPadronRetPerc(models.Model):
                         vals = {
                             'import_padron_id': import_obj.id,
                             'padron_type_id': import_obj.padron_type_id.id,
-                            'cuit': partner_dic[line_dicc].main_id_number,
+                            'cuit': partner_dic[line_dicc].vat,
                             'partner_id': partner_dic[line_dicc].id,
                             'date_from': import_obj.default_date_from,
                             'date_to': import_obj.default_date_to,
@@ -351,7 +351,7 @@ class AccountImportPadronRetPerc(models.Model):
                         vals = {
                             'import_padron_id': import_obj.id,
                             'padron_type_id': import_obj.padron_type_id.id,
-                            'cuit': partner_dic[line_dicc].main_id_number,
+                            'cuit': partner_dic[line_dicc].vat,
                             'partner_id': partner_dic[line_dicc].id,
                             'date_from': import_obj.default_date_from,
                             'date_to': import_obj.default_date_to,
@@ -375,7 +375,7 @@ class AccountImportPadronRetPerc(models.Model):
         partner_dic = {}
         for import_obj in self:
             for partner_obj in import_obj.padron_type_id.line_partner_ids:
-                partner_dic[partner_obj.main_id_number] = partner_obj
+                partner_dic[partner_obj.vat] = partner_obj
             self.import_partner_file(partner_dic=partner_dic)
 
     def import_partner_file(self, context=None, partner_dic={}):
@@ -578,7 +578,7 @@ class AccountImportPadronRetPerc(models.Model):
                         vals = {
                             'import_padron_id': import_obj.id,
                             'padron_type_id': import_obj.padron_type_id.id,
-                            'cuit': partner_dic[line_dicc].main_id_number,
+                            'cuit': partner_dic[line_dicc].vat,
                             'partner_id': partner_dic[line_dicc].id,
                             'date_from': import_obj.default_date_from,
                             'date_to': import_obj.default_date_to,
