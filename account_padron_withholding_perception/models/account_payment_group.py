@@ -8,6 +8,14 @@ _logger = logging.getLogger(__name__)
 class AccountPaymentGroup(models.Model):
     _inherit = "account.payment.group"
 
+    def change_currency_payments(self):
+        for line in self.payment_ids:
+            if self.currency_id and line.currency_id.id != self.currency_id.id:
+                currency_id = line.currency_id.with_context(date=self.payment_date)
+                line.withholding_base_amount = currency_id.compute(line.withholding_base_amount, self.currency_id)
+                line.amount = currency_id.compute(line.amount, self.currency_id)
+                line.currency_id = self.currency_id.id
+
     def compute_withholdings(self):
         self.ensure_one()
         result = super(AccountPaymentGroup, self).compute_withholdings()
