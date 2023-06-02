@@ -11,7 +11,7 @@ class AccountMoveLine(models.Model):
     
     @api.onchange('product_id')
     def onchange_product_id(self):
-        if self.move_id.partner_id and self.move_id.type in ('in_invoice','in_refund'): # Factura proveedor
+        if self.move_id.partner_id and self.move_id.move_type in ('in_invoice','in_refund'): # Factura proveedor
             list_add =  []
             for line_obj in self.move_id.partner_id.line_padron_type_ids:
                 list_add.append(line_obj.id)
