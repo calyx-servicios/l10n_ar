@@ -7,3 +7,4 @@ from . import account_payment_group
 from . import padron_update_cron
 from . import res_partner_arba_alicuot
 from . import res_partner
+from . import res_config_settings

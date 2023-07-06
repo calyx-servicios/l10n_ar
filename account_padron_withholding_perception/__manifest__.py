@@ -2,15 +2,15 @@
 {
     "name": "Import Padron Withholding and Perception",
     "summary": """
-        Adds to the partner the possibility of importing Patterns 
-        of Withholdings and Perceptions. 
+        Adds to the partner the possibility of importing Patterns
+        of Withholdings and Perceptions.
     """,
     "author": "Calyx Servicios S.A.",
     "maintainers": ["PerezGabriela"],
     "website": "http://odoo.calyx-cloud.com.ar/",
     "license": "AGPL-3",
     "category": "Account",
-    "version": "15.0.1.3.0",
+    "version": "15.0.1.1.0",
     "installable": True,
     "application": False,
     "depends": [
@@ -22,7 +22,7 @@
         'security/security.xml',
         'security/ir.model.access.csv',
         'data/ir_cron.xml',
-        'wizards/res_config_settings_views.xml',
+        'views/res_config_settings_views.xml',
         'views/account_import_padron_ret_perc_view.xml',
         'views/account_move_view.xml',
         'views/account_padron_retention_perception_type_view.xml',
