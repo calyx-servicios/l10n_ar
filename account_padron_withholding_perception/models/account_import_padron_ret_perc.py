@@ -24,7 +24,7 @@ class AccountImportPadronRetPerc(models.Model):
         ('arba', 'ARBA'),
         ('other', 'Other')
     ], string='Type', default='other')
-    import_line_ids = fields.One2many('account.padron.retention.perception.line', 
+    import_line_ids = fields.One2many('account.padron.retention.perception.line',
                             'import_padron_id', string='Import Lines', readonly=False)
     default_date_from = fields.Date('Default Date From')
     default_date_to = fields.Date('Default Date To')
@@ -50,7 +50,12 @@ class AccountImportPadronRetPerc(models.Model):
                 partner_dic = context['partner_dic']
             else:
                 for partner_obj in import_obj.padron_type_id.line_partner_ids:
+                    if not partner_obj.vat:
+                        raise ValidationError(_("Error: The contact {} with ID({}) does not have a VAT identification number.".format(partner_obj.name, partner_obj.id)))
+                    if partner_obj.l10n_latam_identification_type_id.country_id.code != 'AR':
+                        raise ValidationError(_("Error: The contact {} with ID({}) is not from Argentina.".format(partner_obj.name, partner_obj.id)))
                     partner_dic[partner_obj.vat] = partner_obj
+
             date_from = str(import_obj.default_date_from)[
                 :4] + str(import_obj.default_date_from)[5:7] + str(import_obj.default_date_from)[8:10]
             date_to = str(import_obj.default_date_to)[
@@ -596,4 +601,3 @@ class AccountImportPadronRetPerc(models.Model):
                         move = self.env[
                             'account.padron.retention.perception.line'].create(vals)
                         move.create_arba_perception_line()
-

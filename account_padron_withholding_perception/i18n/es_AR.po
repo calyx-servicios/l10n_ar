@@ -421,6 +421,20 @@ msgid "Rel Partner Patterns"
 msgstr "Contacto Relacionado"
 
 #. module: account_padron_withholding_perception
+#: code:addons/account_padron_withholding_perception/models/account_import_padron_ret_perc.py:0
+#, python-format
+msgid ""
+"Error: The contact {} with ID({}) does not have a VAT identification number."
+msgstr ""
+"Error: el contacto {} con id ({}) no tiene un número de identificación."
+
+#. module: account_padron_withholding_perception
+#: code:addons/account_padron_withholding_perception/models/account_import_padron_ret_perc.py:0
+#, python-format
+msgid "Error: The contact {} with ID({}) is not from Argentina."
+msgstr "Error: el contacto {} con ID ({}) no es de Argentina."
+
+#. module: account_padron_withholding_perception
 #: model:res.groups,name:account_padron_withholding_perception.padron_retention_perception_responsible_group
 msgid "Responsible Padron Retention Perception"
 msgstr "Responsable del Padron de retención y percepción"
