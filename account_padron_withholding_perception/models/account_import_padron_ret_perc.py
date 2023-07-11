@@ -158,8 +158,7 @@ class AccountImportPadronRetPerc(models.Model):
                                                  0:4] + str(line_obj.date_from)[5:7] + str(line_obj.date_from)[8:10])
                         if line_obj.partner_id.id == partner_dic[str(line[2])].id and line_date_from_int == int(date_from):
                             flag = False
-                            percentage_retention = (
-                                str(line[3]).replace('.', '')).replace(',', '.')
+                            percentage_retention = (str(line[3]).replace('.', '')).replace(',', '.')
                             vals = {
                                 'percentage_retention': percentage_retention,
                             }
@@ -370,7 +369,6 @@ class AccountImportPadronRetPerc(models.Model):
                             'date_to': import_obj.default_date_to,
                             'percentage_perception': import_obj.default_percentage_perception,
                             'percentage_retention': import_obj.default_percentage_retention,
-
                         }
                         move = self.env[
                             'account.padron.retention.perception.line'].create(vals)

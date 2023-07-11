@@ -2,6 +2,7 @@
 from odoo import models, api, _
 from odoo.exceptions import ValidationError
 
+
 class AccountMove(models.Model):
     _inherit = "account.move"
 
@@ -10,7 +11,7 @@ class AccountMove(models.Model):
         list_add =  []
         for line_obj in self.partner_id.line_padron_type_ids:
             list_add.append(line_obj.id)
-        result['ret_perc_type_ids'] = list_add 
+        result['ret_perc_type_ids'] = list_add
         return result
 
     def action_account_invoice_payment_group(self):
@@ -45,12 +46,12 @@ class AccountMove(models.Model):
             for line_obj in rec.partner_id.line_padron_type_ids:
                 list_add.append(line_obj.id)
             for invoice_line_obj in rec.invoice_line_ids:
-                invoice_line_obj.ret_perc_type_ids = list_add 
+                invoice_line_obj.ret_perc_type_ids = list_add
 
     def control_perception(self):
-        # ESTO SE PUEDE MEJORAR EN EL RENDIMIENTO
         for self_obj in self:
             list_id_delete = []
+            invoice_lines = []
             for tax_obj in self_obj.line_ids:
                 for padron_type_obj in self_obj.partner_id.line_padron_type_ids:
                     if padron_type_obj.account_tax_perception_id.id == tax_obj.tax_line_id.id:
@@ -60,6 +61,16 @@ class AccountMove(models.Model):
                                 for line_tax_obj in invoice_line_obj.tax_ids:
                                     if line_tax_obj.id == padron_type_obj.account_tax_perception_id.id:
                                         invoice_line_obj.tax_ids = [(3,  line_tax_obj.id )]
-            for idss in list_id_delete:
-                self_obj.line_ids = [(2,  idss )]
+            for lines in self_obj.invoice_line_ids:
+                invoice_lines.append((0, 0, {
+                    'product_id': lines.product_id.id,
+                    'account_id': lines.account_id.id,
+                    'quantity': lines.quantity,
+                    'product_uom_id': lines.product_uom_id.id,
+                    'price_unit': lines.price_unit,
+                    'discount': lines.discount,
+                    'tax_ids': [(6, 0, lines.tax_ids.ids)]
+                }))
+            self_obj.line_ids = [(5,0,0)]
+            self_obj.invoice_line_ids = invoice_lines
 
