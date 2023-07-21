@@ -115,7 +115,7 @@ class AccountPaymentGroup(models.Model):
                         else:
                             list_amount_tag_retention[str(tag_obj.id)] += (
                                 amount2use * percentage2use_invoice)
-    
+
                     if obj_move.internal_type == "credit_note":
                         if not str(tag_obj.id) in list_amount_tag_retention:
                             list_amount_tag_retention[str(tag_obj.id)] = (

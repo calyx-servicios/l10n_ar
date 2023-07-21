@@ -2,7 +2,6 @@
 from odoo import models, api, _
 from odoo.exceptions import ValidationError
 
-
 class AccountMove(models.Model):
     _inherit = "account.move"
 
@@ -52,15 +51,27 @@ class AccountMove(models.Model):
         for self_obj in self:
             list_id_delete = []
             invoice_lines = []
-            for tax_obj in self_obj.line_ids:
-                for padron_type_obj in self_obj.partner_id.line_padron_type_ids:
-                    if padron_type_obj.account_tax_perception_id.id == tax_obj.tax_line_id.id:
-                        if tax_obj.tax_line_id.withholding_non_taxable_amount < padron_type_obj.minimum_base_perception or tax_obj.tax_line_id.amount < padron_type_obj.minimum_calcule_perception:
-                            list_id_delete.append(tax_obj.id)
-                            for invoice_line_obj in self_obj.invoice_line_ids:
-                                for line_tax_obj in invoice_line_obj.tax_ids:
-                                    if line_tax_obj.id == padron_type_obj.account_tax_perception_id.id:
-                                        invoice_line_obj.tax_ids = [(3,  line_tax_obj.id )]
+
+            for padron_type_obj in self_obj.partner_id.line_padron_type_ids:
+                for tax_obj in self_obj.line_ids:
+
+                    # Get alicuot for date and padron.
+                    corresponding_alicuota = self_obj.partner_id.get_current_alicuota(padron_type_obj, self_obj.invoice_date)
+
+                    if not corresponding_alicuota:
+                        continue
+
+                    base_amount = self_obj.amount_untaxed
+                    calculated_minimum = base_amount * corresponding_alicuota.alicuota_percepcion / 100
+
+                    if base_amount < padron_type_obj.minimum_base_perception or calculated_minimum < padron_type_obj.minimum_calcule_perception:
+                        list_id_delete.append(tax_obj.id)
+
+                        for invoice_line_obj in self_obj.invoice_line_ids:
+                            for line_tax_obj in invoice_line_obj.tax_ids:
+                                if line_tax_obj.id == padron_type_obj.account_tax_perception_id.id:
+                                    invoice_line_obj.tax_ids = [(3, line_tax_obj.id)]
+
             for lines in self_obj.invoice_line_ids:
                 invoice_lines.append((0, 0, {
                     'product_id': lines.product_id.id,
@@ -71,6 +82,10 @@ class AccountMove(models.Model):
                     'discount': lines.discount,
                     'tax_ids': [(6, 0, lines.tax_ids.ids)]
                 }))
-            self_obj.line_ids = [(5,0,0)]
+
+            self_obj.line_ids = [(5, 0, 0)]
             self_obj.invoice_line_ids = invoice_lines
+
+
+
 
