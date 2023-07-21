@@ -1,8 +1,6 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 from odoo import models, api, _
 from odoo.exceptions import ValidationError
-import logging
-_logger = logging.getLogger(__name__)
 
 class AccountMove(models.Model):
     _inherit = "account.move"
