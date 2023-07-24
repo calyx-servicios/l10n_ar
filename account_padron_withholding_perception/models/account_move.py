@@ -5,14 +5,6 @@ from odoo.exceptions import ValidationError
 class AccountMove(models.Model):
     _inherit = "account.move"
 
-    def _prepare_invoice_line_from_po_line(self, line):
-        result = super(AccountMove, self)._prepare_invoice_line_from_po_line(line)
-        list_add =  []
-        for line_obj in self.partner_id.line_padron_type_ids:
-            list_add.append(line_obj.id)
-        result['ret_perc_type_ids'] = list_add
-        return result
-
     def action_account_invoice_payment_group(self):
         self.ensure_one()
         if self.state != 'cancel':
@@ -38,14 +30,6 @@ class AccountMove(models.Model):
                 'default_company_id': self.company_id.id,
             },
         }
-
-    def set_retention_all(self):
-        list_add =  []
-        for rec in self:
-            for line_obj in rec.partner_id.line_padron_type_ids:
-                list_add.append(line_obj.id)
-            for invoice_line_obj in rec.invoice_line_ids:
-                invoice_line_obj.ret_perc_type_ids = list_add
 
     def control_perception(self):
         for self_obj in self:

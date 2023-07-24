@@ -105,7 +105,7 @@ class AccountPaymentGroup(models.Model):
             obj_move = move_line_obj.move_id.l10n_latam_document_type_id
             for invoice_line_obj in move_line_obj.move_id.invoice_line_ids:
                 currency_id = move_line_obj.currency_id.with_context(date=rec.payment_date)  # para usar el valor del dolar del pago
-                for tag_obj in invoice_line_obj.ret_perc_type_ids:
+                for tag_obj in invoice_line_obj.move_id.partner_id.line_padron_type_ids:
                     amount2use = (invoice_line_obj.quantity * invoice_line_obj.price_unit)
                     amount2use = currency_id.compute(amount2use, rec.currency_id)
                     if obj_move.internal_type in ("invoice", "debit_note",):
