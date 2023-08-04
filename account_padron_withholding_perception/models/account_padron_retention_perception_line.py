@@ -1,5 +1,6 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
-from odoo import models, fields, api, _
+from odoo import models, fields, _
+
 
 class AccountPadronRetentionPerceptionLine(models.Model):
     _name = 'account.padron.retention.perception.line'
@@ -31,6 +32,7 @@ class AccountPadronRetentionPerceptionLine(models.Model):
                 if base_discount != 0.0:
                     base_discount = currency_id.compute(base_discount, payment_group_obj.company_id.currency_id)
                     amount_return = (amount_base-base_discount) / 100.0 * self_obj.percentage_retention
+
             return amount_return
 
     def create_arba_perception_line(self):
