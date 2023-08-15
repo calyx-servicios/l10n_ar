@@ -19,69 +19,77 @@ class AccountPaymentGroup(models.Model):
     def compute_withholdings(self):
         self.ensure_one()
         result = super(AccountPaymentGroup, self).compute_withholdings()
-        if result:
-            # Facturas de compras
-            list_amount_tag_retention = {}
-            list_amount_tag_retention_discount = {}
-            # aca recorre las lineas de las facturas
-            # para poder buscar en cada linea si corresponde o no cobrar
-            for move_line_obj in self.to_pay_move_line_ids	:
-                if (
-                    move_line_obj.move_id
-                    and move_line_obj.move_id.move_type
-                    in ("in_invoice", "in_refund")
-                ):
-                    percentage2use_invoice = (
-                        move_line_obj.move_id.amount_residual
-                        / move_line_obj.move_id.amount_total
-                    )
-                    list_amount_tag_retention = result.search_list_amount_tag_retention(
-                        list_amount_tag_retention,
-                        percentage2use_invoice,
+        domain = [
+                    ('partner_id', '=', self.partner_id.id),
+                    ('to_date', '>=', self.payment_date),
+                    ('from_date', '<=', self.payment_date),
+                    ('company_id', '=', self.company_id.id),
+                ]
+        arba_line = self.env['res.partner.arba_alicuot'].search(domain, limit=1)
+        padron_type = arba_line.padron_line_id.padron_type_id
+
+        # Facturas de compras
+        list_amount_tag_retention = {}
+        list_amount_tag_retention_discount = {}
+        # aca recorre las lineas de las facturas
+        # para poder buscar en cada linea si corresponde o no cobrar
+        for move_line_obj in self.to_pay_move_line_ids:
+            if (
+                move_line_obj.move_id
+                and move_line_obj.move_id.move_type
+                in ("in_invoice", "in_refund")
+            ):
+                percentage2use_invoice = (
+                    move_line_obj.move_id.amount_residual
+                    / move_line_obj.move_id.amount_total
+                )
+                list_amount_tag_retention = self.search_list_amount_tag_retention(
+                    list_amount_tag_retention,
+                    percentage2use_invoice,
+                    move_line_obj,
+                )
+            if not move_line_obj.move_id:
+                if move_line_obj.debit != 0.0:
+                    # aca ver como poner para cuando paga una
+                    # factura con un debito(pago anterior) mas grande
+                    percentage2use = 1
+                    list_amount_tag_retention_discount = self.search_all_tag_retention(
+                        list_amount_tag_retention_discount,
+                        percentage2use,
                         move_line_obj,
                     )
-                if not move_line_obj.move_id:
-                    if move_line_obj.debit != 0.0:
-                        # aca ver como poner para cuando paga una
-                        # factura con un debito(pago anterior) mas grande
-                        percentage2use = 1
-                        list_amount_tag_retention_discount = result.search_all_tag_retention(
-                            list_amount_tag_retention_discount,
-                            percentage2use,
-                            move_line_obj,
-                        )
+        if self.selected_debt != 0.0:
+            percentage2use_payment = (self.to_pay_amount / self.selected_debt)
 
-            if result.selected_debt != 0.0:
-                percentage2use_payment = (result.to_pay_amount / result.selected_debt)
-                # esta pregunta si al menos possee una linea para calcular
-                for tag_retention_id in list_amount_tag_retention:
-                    amount2use = (
-                        list_amount_tag_retention[tag_retention_id]
-                        * percentage2use_payment
-                    )
-                    base_discount = 0.0
-                    if tag_retention_id in list_amount_tag_retention_discount:
-                        base_discount = list_amount_tag_retention_discount[
-                            tag_retention_id
-                        ]
-                    self.env[
-                        "account.padron.retention.perception.type"
-                    ].create_retention(
-                        tag_retention_id, amount2use, result, base_discount
-                    )
-            # aca procesa todos los padrones que tiene
-            # relacionado el partner cuando el pago es sin facturas
-            if not result.to_pay_move_line_ids:
+            # esta pregunta si al menos possee una linea para calcular
+            for tag_retention_id in list_amount_tag_retention:
+                amount2use = (
+                    list_amount_tag_retention[tag_retention_id]
+                    * percentage2use_payment
+                )
+
                 base_discount = 0.0
-                for padron_line_obj in result.partner_id.line_padron_type_ids:
-                    self.env[
-                        "account.padron.retention.perception.type"
-                    ].create_retention(
-                        padron_line_obj.id,
-                        result.to_pay_amount,
-                        result,
-                        base_discount,
-                    )
+                if tag_retention_id in list_amount_tag_retention_discount:
+                    base_discount = list_amount_tag_retention_discount[
+                        tag_retention_id
+                    ]
+
+                data = padron_type.create_retention(
+                    tag_retention_id, amount2use, self, base_discount
+                )
+        # aca procesa todos los padrones que tiene
+        # relacionado el partner cuando el pago es sin facturas
+        if not self.to_pay_move_line_ids:
+            base_discount = 0.0
+            for padron_line_obj in self.partner_id.line_padron_type_ids:
+                self.env[
+                    "account.padron.retention.perception.type"
+                ].create_retention(
+                    padron_line_obj.id,
+                    self.to_pay_amount,
+                    self,
+                    base_discount,
+                )
         self.change_currency_payments()
         return result
 

@@ -64,17 +64,14 @@ class AccountPadronRetentionPerceptionType(models.Model):
                             'journal_id': self_obj.payment_journal_retention_id.id ,
                             'tax_withholding_id': self_obj.account_tax_retention_id.id ,
                             'withholding_base_amount': base_amount-base_discount,
-                            'withholding_alicuot': padron_line_obj.percentage_retention,
                             'amount': amount_retention,
-                            'payment_group_company_id':payment_group_obj.company_id.id,
-                            'payment_date': payment_group_obj.payment_date,
+                            'company_id':payment_group_obj.company_id.id,
+                            'date': payment_group_obj.payment_date,
                             'partner_id': payment_group_obj.partner_id.id,
                             'partner_type': payment_group_obj.partner_type,
                             'payment_group_id': payment_group_obj.id,
-                            'communication': self_obj.description,
                             'payment_type': 'outbound',
                             'payment_method_id': self.env.ref('account_withholding.account_payment_method_out_withholding'),
-                            'boolean_check_payment_group': True,
                         }
                         payment = self.env['account.payment'].create(vals)
 
