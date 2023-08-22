@@ -18,15 +18,22 @@ class ResPartner(models.Model):
         return record
 
     def write(self, values):
-        padron_control={}
         for rec in self:
-            for line_obj in rec.line_padron_type_ids:
-                padron_control[str(line_obj.id)] = line_obj
-            return_var = super(ResPartner, rec).write(values)
-            for padron_index in padron_control:
-                padron_control[padron_index].partner_control()
-            if rec.line_padron_type_ids:
+            if 'line_padron_type_ids' in values:
+                padron_control = {}
+                for line_obj in rec.line_padron_type_ids:
+                    padron_control[str(line_obj.id)] = line_obj
+
+                return_var = super(ResPartner, rec).write(values)
+
+                for padron_index in padron_control:
+                    padron_control[padron_index].partner_control()
+
                 rec.import_padron_server_partner()
+            else:
+                return_var = super(ResPartner, rec).write(values)
+
+        return return_var
 
     def import_padron_server_partner(self, context={}):
         partner_dic={} #padron_type_id

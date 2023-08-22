@@ -54,7 +54,8 @@ class AccountPadronRetentionPerceptionType(models.Model):
                 for padron_line_obj in self_obj.padron_line_ids.filtered(
                     lambda padron_line_obj: padron_line_obj.partner_id.id == payment_group_obj.partner_id.id
                             and padron_line_obj.date_from <= payment_group_obj.payment_date
-                            and padron_line_obj.date_to >= payment_group_obj.payment_date):
+                            and padron_line_obj.date_to >= payment_group_obj.payment_date
+                            and padron_line_obj.padron_type_id.account_tax_retention_id.company_id.id == payment_group_obj.company_id.id):
                     amount_retention = padron_line_obj.calcule_retention(base_amount,payment_group_obj,base_discount)
                     if amount_retention != 0.0:
                         for line in payment_group_obj.payment_ids:
@@ -71,7 +72,7 @@ class AccountPadronRetentionPerceptionType(models.Model):
                             'partner_type': payment_group_obj.partner_type,
                             'payment_group_id': payment_group_obj.id,
                             'payment_type': 'outbound',
-                            'payment_method_id': self.env.ref('account_withholding.account_payment_method_out_withholding'),
+                            'payment_method_id': self.env.ref('account_withholding.account_payment_method_out_withholding').id,
                         }
                         payment = self.env['account.payment'].create(vals)
 
