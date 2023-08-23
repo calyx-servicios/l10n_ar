@@ -17,7 +17,8 @@ class AccountMoveLine(models.Model):
                 ]
                 arba_line = self.env['res.partner.arba_alicuot'].search(domain, limit=1)
                 if arba_line:
-                    tax_id = arba_line.padron_line_id.import_padron_id.padron_type_id.account_tax_perception_id
+                    padrons_type = arba_line.padron_line_id.import_padron_id.padron_type_id.filtered(lambda x: x.company_id.id == self.company_id.id)
+                    tax_id = padrons_type.account_tax_perception_id
                     if not tax_id.id in self.tax_ids.ids:
                         self.tax_ids = [(4, tax_id.id)]
 

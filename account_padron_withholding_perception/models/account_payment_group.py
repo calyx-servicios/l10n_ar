@@ -26,7 +26,7 @@ class AccountPaymentGroup(models.Model):
                     ('company_id', '=', self.company_id.id),
                 ]
         arba_line = self.env['res.partner.arba_alicuot'].search(domain, limit=1)
-        padron_type = arba_line.padron_line_id.padron_type_id
+        padron_type = arba_line.padron_line_id.padron_type_id.filtered(lambda x: x.company_id.id == self.company_id.id)
 
         # Facturas de compras
         list_amount_tag_retention = {}
