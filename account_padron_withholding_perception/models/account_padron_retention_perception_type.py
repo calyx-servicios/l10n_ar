@@ -7,6 +7,7 @@ class AccountPadronRetentionPerceptionType(models.Model):
 
     name = fields.Char(string='Name')
     description = fields.Char(string='Description', size=256)
+    company_id = fields.Many2one('res.company')
     payment_journal_retention_id = fields.Many2one('account.journal', string="Payment Journal Retention")
     account_tax_retention_id = fields.Many2one('account.tax', string="Account Tax Retention")
     account_tax_perception_id = fields.Many2one('account.tax', string="Account Tax Perception")

@@ -1,5 +1,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 from odoo import models, fields, _
+from odoo.exceptions import UserError
+
 
 
 class AccountPadronRetentionPerceptionLine(models.Model):
@@ -38,10 +40,13 @@ class AccountPadronRetentionPerceptionLine(models.Model):
     def create_arba_perception_line(self):
         # Crear las percepciones
         for self_obj in self:
+            if not self_obj.padron_type_id.company_id:
+                raise UserError(_('Please, select a company for padron type: {}'.format(self_obj.padron_type_id.name)))
             vals = {
                 'tag_id': self_obj.padron_type_id.account_tag_perception_id.id ,
                 'from_date': self_obj.date_from ,
                 'to_date': self_obj.date_to ,
+                'company_id': self_obj.padron_type_id.company_id,
                 'alicuota_percepcion': self_obj.percentage_perception,
                 'alicuota_retencion': self_obj.percentage_retention,
                 'partner_id': self_obj.partner_id.id,

@@ -25,21 +25,22 @@
                     </group>
                     <group name="group_2">
                         <field name="description"/>
+                        <field name="company_id"/>
                     </group>
                     <group name="group_3" string="Perceptions">
-                        <field name="account_tax_perception_id"/>
+                        <field name="account_tax_perception_id" domain="[('company_id', '=', company_id)]"/>
                         <field name="account_tag_perception_id"/>
-                        <field name="minimum_calcule_perception"/>
+                        <field name="minimum_calcule_perception" />
                         <field name="minimum_base_perception"/>
                     </group>
                     <group name="group_4" string="Withholding">
-                        <field name="account_tax_retention_id"/>
-                        <field name="payment_journal_retention_id"/>
+                        <field name="account_tax_retention_id" domain="[('company_id', '=', company_id)]"/>
+                        <field name="payment_journal_retention_id" domain="[('company_id', '=', company_id)]"/>
                         <field name="minimum_calcule_retention"/>
                         <field name="minimum_base_retention"/>
                     </group>
                 </group>
-                <notebook> 
+                <notebook>
                 	<page name="line_partner_ids_page" string="Partners">
                         <button name="partner_control" string="Control" type="object" class="oe_highlight"/>
                         <field name="line_partner_ids" >
@@ -60,7 +61,7 @@
                                 <field name="percentage_perception"/>
                                 <field name="in_padron"/>
                                 <field name="arba_alicuot_id"/>
-                                <button name="create_arba_perception_line" string="Create Perception" 
+                                <button name="create_arba_perception_line" string="Create Perception"
                                 	type="object" class="oe_highlight"/>
                             </tree>
                         </field>
@@ -91,7 +92,6 @@
         <field name="view_id" ref="view_account_padron_retention_perception_type_tree"/>
     </record>
 
-    <menuitem action="padron_retention_perception_type_action" id="menu_padron_retention_perception_type"  sequence="8" 
+    <menuitem action="padron_retention_perception_type_action" id="menu_padron_retention_perception_type"  sequence="8"
     	parent="account.account_account_menu"  groups="account_padron_withholding_perception.padron_retention_perception_responsible_group"/>
 </odoo>
-
