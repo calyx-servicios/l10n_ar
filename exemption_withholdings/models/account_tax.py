@@ -5,7 +5,6 @@ from datetime import datetime
 class AccountTax(models.Model):
     _inherit = 'account.tax'
 
-    vat_iva_applied = fields.Boolean('is VAT withholding applied')
 
     def create_payment_withholdings(self, payment_group):
         tax_exempt = self.env['account.tax']
