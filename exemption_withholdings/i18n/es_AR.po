@@ -118,8 +118,3 @@ msgstr "Impuesto"
 #: model:ir.model.fields,field_description:exemption_withholdings.field_exemption_withholding__account_tax_id
 msgid "Withholding"
 msgstr "Retencion"
-
-#. module: exemption_withholdings
-#: model:ir.model.fields,field_description:exemption_withholdings.field_account_tax__vat_iva_applied
-msgid "is VAT withholding applied"
-msgstr "Es retención de IVA aplicada"
