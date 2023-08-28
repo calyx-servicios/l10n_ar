@@ -107,7 +107,7 @@ msgstr "Cancelar"
 #: model:ir.model.fields,field_description:l10n_ar_reports.field_account_vat_ledger__company_id
 #: model_terms:ir.ui.view,arch_db:l10n_ar_reports.view_account_ar_vat_line_search
 msgid "Company"
-msgstr "Conpañía"
+msgstr "Compañía"
 
 #. module: l10n_ar_reports
 #: model_terms:ir.ui.view,arch_db:l10n_ar_reports.account_vat_ledger_form
