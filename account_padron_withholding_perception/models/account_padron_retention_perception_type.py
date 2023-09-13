@@ -47,33 +47,3 @@ class AccountPadronRetentionPerceptionType(models.Model):
                 if not str(line_obj.partner_id.id) in partner_dic:
                    line_obj.unlink()
 
-    def create_retention(self,tag_retention_id,base_amount,payment_group_obj,base_discount):
-        for rec in self:
-            # ACA VAMOS A crear las retenciones necesarias
-            for self_obj in rec.browse(int(tag_retention_id)):
-                # me esta faltando controlar la fecha
-                for padron_line_obj in self_obj.padron_line_ids.filtered(
-                    lambda padron_line_obj: padron_line_obj.partner_id.id == payment_group_obj.partner_id.id
-                            and padron_line_obj.date_from <= payment_group_obj.payment_date
-                            and padron_line_obj.date_to >= payment_group_obj.payment_date
-                            and padron_line_obj.padron_type_id.account_tax_retention_id.company_id.id == payment_group_obj.company_id.id):
-                    amount_retention = padron_line_obj.calcule_retention(base_amount,payment_group_obj,base_discount)
-                    if amount_retention != 0.0:
-                        for line in payment_group_obj.payment_ids:
-                            if line.tax_withholding_id.id == self_obj.account_tax_retention_id.id:
-                                line.unlink()
-                        vals = {
-                            'journal_id': self_obj.payment_journal_retention_id.id ,
-                            'tax_withholding_id': self_obj.account_tax_retention_id.id ,
-                            'withholding_base_amount': base_amount-base_discount,
-                            'amount': amount_retention,
-                            'company_id':payment_group_obj.company_id.id,
-                            'date': payment_group_obj.payment_date,
-                            'partner_id': payment_group_obj.partner_id.id,
-                            'partner_type': payment_group_obj.partner_type,
-                            'payment_group_id': payment_group_obj.id,
-                            'payment_type': 'outbound',
-                            'payment_method_id': self.env.ref('account_withholding.account_payment_method_out_withholding').id,
-                        }
-                        payment = self.env['account.payment'].create(vals)
-

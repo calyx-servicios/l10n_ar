@@ -32,31 +32,32 @@ class AccountMove(models.Model):
         }
 
     def control_perception(self):
-        for self_obj in self:
-            list_id_delete = []
-            invoice_lines = []
+        list_id_delete = []
+        invoice_lines = []
 
-            for padron_type_obj in self_obj.partner_id.line_padron_type_ids:
-                for tax_obj in self_obj.line_ids:
+        padron_type_obj = self.partner_id.line_padron_type_ids.filtered(lambda x: x.company_id.id == self.company_id.id)
 
-                    # Get alicuot for date and padron.
-                    corresponding_alicuota = self_obj.partner_id.get_current_alicuota(padron_type_obj, self_obj.invoice_date)
+        for lines in self.invoice_line_ids:
 
-                    if not corresponding_alicuota:
-                        continue
+            # Get alicuot for date and padron.
+            corresponding_alicuota = self.partner_id.get_current_alicuota(padron_type_obj, self.invoice_date, self.company_id)
 
-                    base_amount = self_obj.amount_untaxed
-                    calculated_minimum = base_amount * corresponding_alicuota.alicuota_percepcion / 100
+            if not corresponding_alicuota:
+                continue
 
-                    if base_amount < padron_type_obj.minimum_base_perception or calculated_minimum < padron_type_obj.minimum_calcule_perception:
-                        list_id_delete.append(tax_obj.id)
+            base_amount = self.amount_untaxed
+            calculated_minimum = base_amount * corresponding_alicuota.alicuota_percepcion / 100
 
-                        for invoice_line_obj in self_obj.invoice_line_ids:
-                            for line_tax_obj in invoice_line_obj.tax_ids:
-                                if line_tax_obj.id == padron_type_obj.account_tax_perception_id.id:
-                                    invoice_line_obj.tax_ids = [(3, line_tax_obj.id)]
+            if base_amount < padron_type_obj.minimum_base_perception or calculated_minimum < padron_type_obj.minimum_calcule_perception:
+                list_id_delete.append(lines.id)
 
-            for lines in self_obj.invoice_line_ids:
+                for line_tax_obj in lines.tax_ids:
+
+                    tags_matched =  line_tax_obj.invoice_repartition_line_ids.filtered(lambda x: padron_type_obj.account_tag_perception_id.id in x.tag_ids.ids)
+                    if line_tax_obj.id == padron_type_obj.account_tax_perception_id.id or tags_matched:
+                        lines.tax_ids = [(3, line_tax_obj.id)]
+        if list_id_delete:
+            for lines in self.invoice_line_ids:
                 invoice_lines.append((0, 0, {
                     'product_id': lines.product_id.id,
                     'account_id': lines.account_id.id,
@@ -67,8 +68,8 @@ class AccountMove(models.Model):
                     'tax_ids': [(6, 0, lines.tax_ids.ids)]
                 }))
 
-            self_obj.line_ids = [(5, 0, 0)]
-            self_obj.invoice_line_ids = invoice_lines
+            self.line_ids = [(5, 0, 0)]
+            self.invoice_line_ids = invoice_lines
 
 
 
