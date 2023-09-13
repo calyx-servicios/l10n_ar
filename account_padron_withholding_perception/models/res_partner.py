@@ -18,6 +18,8 @@ class ResPartner(models.Model):
         return record
 
     def write(self, values):
+        return_var = None
+
         for rec in self:
             if 'line_padron_type_ids' in values:
                 padron_control = {}
@@ -48,10 +50,10 @@ class ResPartner(models.Model):
                 for import_obj in result_ids:
                     import_obj.import_padron_server(context=context)
 
-    def get_current_alicuota(self, padron_type, date_invoice):
+    def get_current_alicuota(self, padron_type, date_invoice, company_id):
         current_alicuota = None
 
-        for alicuota in self.arba_alicuot_ids:
+        for alicuota in self.arba_alicuot_ids.filtered(lambda x: x.company_id.id == company_id.id):
             if alicuota.tag_id.id == padron_type.account_tag_perception_id.id:
                 if alicuota.from_date <= date_invoice <= alicuota.to_date:
                     current_alicuota = alicuota

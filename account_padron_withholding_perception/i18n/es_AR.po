@@ -54,7 +54,7 @@ msgstr "Cuenta Retención"
 #: model:ir.model,name:account_padron_withholding_perception.model_account_import_padron_ret_perc
 #, python-format
 msgid "Account import patterns withholding and perception"
-msgstr ""
+msgstr "Patrones de importación de cuentas con tenencia y percepción"
 
 #. module: account_padron_withholding_perception
 #: code:addons/account_padron_withholding_perception/models/account_padron_retention_perception_line.py:0
@@ -533,3 +533,35 @@ msgstr "res.partner.arba_alicuot"
 #: model:ir.model.fields,field_description:account_padron_withholding_perception.field_res_config_settings__check_census_on_create
 msgid "¿Looking for aliquots of withholdings and perceptions in partner?"
 msgstr "¿Buscar alícuotas de retenciones y percepciones en partner?"
+
+#. module: account_padron_withholding_perception
+#: code:addons/account_padron_withholding_perception/models/account_payment_group.py:0
+#, python-format
+msgid ""
+"The minimum base retention {} is higher than the untaxed amount in the "
+"invoice, so it is not applied in this payment"
+msgstr ""
+"La base mínima de retención {} es superior al importe no gravado en la "
+"factura, por lo que no se aplica en este pago."
+
+#. module: account_padron_withholding_perception
+#: code:addons/account_padron_withholding_perception/models/account_payment_group.py:0
+#, python-format
+msgid ""
+"The minimum base retention {} is higher than the untaxed amount on some of "
+"the invoice, so the following discunt {} is applied to withholding on the "
+"total in this payment."
+msgstr ""
+"La base mínima de retención {} es superior al monto libre de impuestos en algunas de "
+"las facturas, por lo que no se aplica el siguiente monto {} a la retención sobre el "
+"total en este pago."
+
+#. module: account_padron_withholding_perception
+#: code:addons/account_padron_withholding_perception/models/account_payment_group.py:0
+#, python-format
+msgid ""
+"The minimum calculated retention {} is higher than the amount {} in the "
+"payment, so it is not applied in this payment"
+msgstr ""
+"La retención mínima calculada {} es mayor que la cantidad {} en el "
+"pago, por lo que no se aplica en este pago"

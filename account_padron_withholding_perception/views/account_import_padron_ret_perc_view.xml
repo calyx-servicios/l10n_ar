@@ -84,4 +84,3 @@
 
     <menuitem action="import_padron_retention_perception_action" id="menu_import_padron_retention_perception"  sequence="9" parent="account.account_account_menu" groups="account_padron_withholding_perception.padron_retention_perception_responsible_group"/>
 </odoo>
-
