@@ -14,7 +14,7 @@ class ResPartner(models.Model):
         record = super(ResPartner, self).create(values)
         if (record.l10n_ar_afip_responsibility_type_id.code not in ('5', '7', '8', '9')) and self.env['ir.config_parameter'].get_param('account_padron_withholding_perception.check_census_on_create') and record.vat:
             padrones = self.env['account.padron.retention.perception.type'].search([]).ids
-            record.write({'line_padron_type_ids': [(6, 0, padrones)]})
+            record.sudo().write({'line_padron_type_ids': [(6, 0, padrones)]})
         return record
 
     def write(self, values):

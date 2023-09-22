@@ -40,7 +40,7 @@ class AccountImportPadronRetPerc(models.Model):
 
     def open2close(self, context=None):
         for import_obj in self:
-            import_obj.write({'state': 'close'})
+            import_obj.sudo().write({'state': 'close'})
 
     def import_padron_server(self, context=None):
         partner_dic = {}
@@ -93,7 +93,7 @@ class AccountImportPadronRetPerc(models.Model):
 
                     }
                     new_line = self.env[
-                        'account.padron.retention.perception.line'].create(vals)
+                        'account.padron.retention.perception.line'].sudo().create(vals)
                     new_line.create_arba_perception_line()
 
     def _get_conn(self, import_obj):
@@ -162,7 +162,7 @@ class AccountImportPadronRetPerc(models.Model):
                             vals = {
                                 'percentage_retention': percentage_retention,
                             }
-                            line_obj.write(vals)
+                            line_obj.sudo().write(vals)
                     if flag:
                         percentage_retention = (
                             str(line[3]).replace('.', '')).replace(',', '.')
@@ -185,7 +185,7 @@ class AccountImportPadronRetPerc(models.Model):
                             'percentage_retention': percentage_retention,
                         }
                         new_line = self.env[
-                            'account.padron.retention.perception.line'].create(vals)
+                            'account.padron.retention.perception.line'].sudo().create(vals)
             cur.close()
             ######################################################
             # PARA LAS PERCEPCIONES
@@ -221,7 +221,7 @@ class AccountImportPadronRetPerc(models.Model):
                             vals = {
                                 'percentage_perception': percentage_perception,  # percentage_perception
                             }
-                            line_obj.write(vals)
+                            line_obj.sudo().write(vals)
                     if flag:
                         percentage_perception = (
                             str(line[3]).replace('.', '')).replace(',', '.')
@@ -236,7 +236,7 @@ class AccountImportPadronRetPerc(models.Model):
                             'percentage_retention': import_obj.default_percentage_retention,
                         }
                         new_line = self.env[
-                            'account.padron.retention.perception.line'].create(vals)
+                            'account.padron.retention.perception.line'].sudo().create(vals)
             cur.close()
         except (Exception, psycopg2.DatabaseError) as error:
             raise ValidationError(_(error))
@@ -265,12 +265,14 @@ class AccountImportPadronRetPerc(models.Model):
                             'percentage_retention': import_obj.default_percentage_retention,
                         }
                         new_line = self.env[
-                            'account.padron.retention.perception.line'].create(vals)
+                            'account.padron.retention.perception.line'].sudo().create(vals)
                         new_line.create_arba_perception_line()
         else:
             date_to_string = str(date_to)[6:8]+"/"+str(date_to)[4:6]+"/"+str(date_to)[:4]
             date_from_string = str(date_from)[6:8]+"/"+str(date_from)[4:6]+"/"+str(date_from)[:4]
-            raise ValidationError(_("No records were found for ARBA between the dates %s and %s"%(date_from_string, date_to_string)))
+            msg = _("No records were found for ARBA Padron Type {} between the dates {} and {}".format(import_obj.padron_type_id.name, date_from_string, date_to_string))
+            for partner in partner_dic.values():
+               partner.message_post(body=msg)
 
 # METODO DE TABLA AGIP
     def search_table_agip(self, import_obj, partner_dic, date_from, date_to):
@@ -349,7 +351,7 @@ class AccountImportPadronRetPerc(models.Model):
                             'percentage_retention': percentage_retention,
                         }
                         move = self.env[
-                            'account.padron.retention.perception.line'].create(vals)
+                            'account.padron.retention.perception.line'].sudo().create(vals)
                         move.create_arba_perception_line()
                         partner_dic[line[3]] = None
             cur.close()
@@ -379,13 +381,14 @@ class AccountImportPadronRetPerc(models.Model):
                             'percentage_retention': import_obj.default_percentage_retention,
                         }
                         move = self.env[
-                            'account.padron.retention.perception.line'].create(vals)
+                            'account.padron.retention.perception.line'].sudo().create(vals)
                         move.create_arba_perception_line()
         else:
             date_to_string = str(date_to)[6:8]+"/"+str(date_to)[4:6]+"/"+str(date_to)[:4]
             date_from_string = str(date_from)[6:8]+"/"+str(date_from)[4:6]+"/"+str(date_from)[:4]
-            raise ValidationError(_("No records were found for AGIP between the dates %s and %s"%(date_from_string, date_to_string)))
-
+            msg = _("No records were found for AGIP Padron Type{} between the dates {} and {}".format(import_obj.padron_type_id.name, date_from_string, date_to_string))
+            for partner in partner_dic.values():
+                partner.message_post(body=msg)
 
 ###########################################
 # PARA EL USO DE ARCHIVOS EN EL SERVIDOR
@@ -439,7 +442,7 @@ class AccountImportPadronRetPerc(models.Model):
                                     'percentage_perception': percentage_perception,
                                     'percentage_retention': percentage_retention,
                                 }
-                                line_obj_aux.write(vals)
+                                line_obj_aux.sudo().write(vals)
                                 line_obj_aux.create_arba_perception_line()
 
                             if flag:
@@ -581,7 +584,7 @@ class AccountImportPadronRetPerc(models.Model):
 
             for line_dicc in partner_dic_create:
                 partner_dic[line_dicc] = None
-                move = self.env['account.padron.retention.perception.line'].create(
+                move = self.env['account.padron.retention.perception.line'].sudo().create(
                     partner_dic_create[line_dicc])
                 move.create_arba_perception_line()
 
@@ -605,5 +608,5 @@ class AccountImportPadronRetPerc(models.Model):
                             'percentage_retention': import_obj.default_percentage_retention,
                         }
                         move = self.env[
-                            'account.padron.retention.perception.line'].create(vals)
+                            'account.padron.retention.perception.line'].sudo().create(vals)
                         move.create_arba_perception_line()
