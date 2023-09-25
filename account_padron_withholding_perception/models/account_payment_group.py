@@ -9,13 +9,13 @@ class AccountPaymentGroup(models.Model):
 
         # Get alicut
         arba_line = self._find_arba_alicuot()
-        
+
         # Get padron type
         padron_type = self._find_padron_type(arba_line)
-        
+
         # Search withholding payment line
         retention_line = self._search_line_retention(padron_type.account_tax_retention_id)
-        
+
         # Get all debt lines
         to_pay_lines = self._get_all_to_pay_lines()
 

@@ -27,7 +27,6 @@ class ResPartner(models.Model):
 
         return record
 
-
     def write(self, values):
         return_var = None
     
@@ -36,12 +35,12 @@ class ResPartner(models.Model):
                 padron_control = {}
                 for line_obj in rec.line_padron_type_ids:
                     padron_control[str(line_obj.id)] = line_obj
-    
+
                 return_var = super(ResPartner, rec).write(values)
-    
+
                 for padron_index in padron_control:
                     padron_control[padron_index].partner_control()
-    
+
                 # Verificar si no se está desviculando el campo 'line_padron_type_ids'
                 if not any(op[0] == 3 for op in values.get('line_padron_type_ids', [])):
                     rec.import_padron_server_partner()
@@ -80,6 +79,3 @@ class ResPartner(models.Model):
             self.write({
                 'line_padron_type_ids': [(3, line_padron.id, False)]
             })
-
-
-
