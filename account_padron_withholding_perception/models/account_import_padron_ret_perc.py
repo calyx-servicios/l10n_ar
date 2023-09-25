@@ -272,9 +272,10 @@ class AccountImportPadronRetPerc(models.Model):
             date_from_string = str(date_from)[6:8]+"/"+str(date_from)[4:6]+"/"+str(date_from)[:4]
             msg = _("No records were found for ARBA Padron Type {} between the dates {} and {}".format(import_obj.padron_type_id.name, date_from_string, date_to_string))
             for partner in partner_dic.values():
-               partner.message_post(body=msg)
+                partner.process_partner_data(import_obj)
+                partner.message_post(body=msg)
 
-# METODO DE TABLA AGIP
+    # METODO DE TABLA AGIP
     def search_table_agip(self, import_obj, partner_dic, date_from, date_to):
         # armar primero el where segun la columna que corresponda con los partner y las fechas
         # realizar la consulta y procesarla para volver en un dic como clave el cuil
@@ -388,11 +389,12 @@ class AccountImportPadronRetPerc(models.Model):
             date_from_string = str(date_from)[6:8]+"/"+str(date_from)[4:6]+"/"+str(date_from)[:4]
             msg = _("No records were found for AGIP Padron Type{} between the dates {} and {}".format(import_obj.padron_type_id.name, date_from_string, date_to_string))
             for partner in partner_dic.values():
+                partner.process_partner_data(import_obj)
                 partner.message_post(body=msg)
 
-###########################################
-# PARA EL USO DE ARCHIVOS EN EL SERVIDOR
-###########################################
+    ###########################################
+    # PARA EL USO DE ARCHIVOS EN EL SERVIDOR
+    ###########################################
     def import_padron_file(self, context=None):
         partner_dic = {}
         for import_obj in self:
@@ -461,7 +463,7 @@ class AccountImportPadronRetPerc(models.Model):
                                 move.create_arba_perception_line()
                             partner_dic[row[3]] = None
 
-    # PARA AMBOS ARCHIVOS
+            # PARA AMBOS ARCHIVOS
             partner_dic_write_obj = {}
             partner_dic_write_data = {}
             partner_dic_create = {}
