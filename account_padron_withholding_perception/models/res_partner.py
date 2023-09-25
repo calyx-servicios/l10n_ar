@@ -8,13 +8,23 @@ class ResPartner(models.Model):
                                     'res_partner_padron_type_rel',  'padron_type_id', 'partner_id',
                                     string="Rel Partner Patterns", copy=False, readonly=False)
 
-
     @api.model
     def create(self, values):
         record = super(ResPartner, self).create(values)
-        if (record.l10n_ar_afip_responsibility_type_id.code not in ('5', '7', '8', '9')) and self.env['ir.config_parameter'].get_param('account_padron_withholding_perception.check_census_on_create') and record.vat:
+
+        # Check if the country code is 'AR', the AFIP responsibility type is not one of ('5', '7', '8', '9'),
+        # the identification type is 'CUIT', the census check is enabled, and VAT is not empty
+        if (
+            record.country_id.code == 'AR' and
+            record.l10n_ar_afip_responsibility_type_id.code not in ('5', '7', '8', '9') and
+            record.l10n_latam_identification_type_id.name == 'CUIT' and
+            self.env['ir.config_parameter'].get_param('account_padron_withholding_perception.check_census_on_create') and
+            record.vat
+        ):
+            # Search for padrones and update line_padron_type_ids field
             padrones = self.env['account.padron.retention.perception.type'].search([]).ids
             record.sudo().write({'line_padron_type_ids': [(6, 0, padrones)]})
+
         return record
 
     def write(self, values):
@@ -31,7 +41,9 @@ class ResPartner(models.Model):
                 for padron_index in padron_control:
                     padron_control[padron_index].partner_control()
 
-                rec.import_padron_server_partner()
+                # Check if the 'line_padron_type_ids' field is not being unlinked
+                if not any(op[0] == 3 for op in values.get('line_padron_type_ids', [])):
+                    rec.import_padron_server_partner()
             else:
                 return_var = super(ResPartner, rec).write(values)
 
@@ -61,5 +73,9 @@ class ResPartner(models.Model):
 
         return current_alicuota
 
-
-
+    def process_partner_data(self, import_obj):
+        line_padron = self.line_padron_type_ids.filtered(lambda line: line.id == import_obj.padron_type_id.id)
+        if line_padron:
+            self.write({
+                'line_padron_type_ids': [(3, line_padron.id, False)]
+            })
