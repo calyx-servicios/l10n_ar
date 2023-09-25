@@ -29,7 +29,7 @@ class ResPartner(models.Model):
 
     def write(self, values):
         return_var = None
-    
+
         for rec in self:
             if 'line_padron_type_ids' in values:
                 padron_control = {}
@@ -41,7 +41,7 @@ class ResPartner(models.Model):
                 for padron_index in padron_control:
                     padron_control[padron_index].partner_control()
 
-                # Verificar si no se está desviculando el campo 'line_padron_type_ids'
+                # Check if the 'line_padron_type_ids' field is not being unlinked
                 if not any(op[0] == 3 for op in values.get('line_padron_type_ids', [])):
                     rec.import_padron_server_partner()
             else:
