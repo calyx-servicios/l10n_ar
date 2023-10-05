@@ -40,7 +40,9 @@ class AccountPaymentGroup(models.Model):
                         'on some of the invoices, so the following discount {} is applied to '
                         'withholding on the total in this payment.'
                     ).format(padron_type.minimum_base_retention, total_to_discount)
-                retention_line.amount = total_alicuot - total_to_discount
+
+                amount_retention = total_alicuot - total_to_discount
+                self.create_retention(retention_line, amount_retention, total_debt_untaxed)
 
             if display_msg:
                 self.message_post(body=display_msg)
@@ -87,3 +89,17 @@ class AccountPaymentGroup(models.Model):
 
     def _get_all_to_pay_lines(self):
         return self.to_pay_move_line_ids.filtered(lambda x: x.move_id.move_type in ["in_invoice", "in_refund"])
+
+    def create_retention(self, obj_ret, amount_retention, base_retention):
+        vals = {
+            'withholding_base_amount': base_retention,
+            'withholdable_invoiced_amount': base_retention,
+            'computed_withholding_amount': amount_retention,
+            'previous_withholding_amount': 0.0,
+            'amount': amount_retention,
+            'accumulated_amount': 0.0,
+            'total_amount': base_retention,
+            'withholdable_base_amount': base_retention,
+            'period_withholding_amount': amount_retention,
+        }
+        obj_ret.write(vals)
