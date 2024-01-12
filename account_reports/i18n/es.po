@@ -2540,3 +2540,10 @@ msgstr "Asientos Contables no Publicados"
 #: model_terms:ir.ui.view,arch_db:account_reports.line_template_general_ledger_report
 msgid "⇒ journal items"
 msgstr "⇒ entrada contable"
+
+#. module: account_reports
+#. openerp-web
+#: code:addons/account_reports/static/src/js/account_reports.js:0
+#, python-format
+msgid "Clear"
+msgstr "Limpiar"

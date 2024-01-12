@@ -499,6 +499,22 @@ var accountReportsWidget = AbstractAction.extend({
             }
         });
 
+        // button partner filter
+        if (this.report_options.partner) {            
+            var self = this;  
+            var fields = {};  
+            var data = {};
+            var $clearPartnersButton = $('<button>', {
+                text: _t('Clear'),
+                class: 'clear-partners-btn',
+                click: function() {
+                    self.trigger_up('value_changed', data);
+                    delete self.M2MFilters;
+                }
+            });
+            this.$searchview_buttons.find('.js_account_partner_m2m').append($clearPartnersButton);
+        }
+        
         // partner filter
         if (this.report_options.partner) {
             if (!this.M2MFilters) {

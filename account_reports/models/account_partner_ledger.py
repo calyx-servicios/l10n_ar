@@ -629,6 +629,23 @@ class ReportPartnerLedger(models.AbstractModel):
                 total_credit,
                 total_balance
             ))
+            
+        for line in lines:
+            # Change 'colspan = 4' to 6 and delete line 4 inside columns dictionary
+            if 'trust' in line:
+                line['colspan'] = 3                
+                line['columns'].pop(3)
+            elif 'class' in line:
+                # Delete lines 2, 5 and 9 inside columns dictionary
+                if 'caret_options' in line:
+                    line['columns'].pop(8)
+                    line['columns'].pop(4)
+                    line['columns'].pop(2)
+                    line['columns'].pop(1)
+                # Change 'colspan = 3' to 6 and delete line 4 inside columns dictionary
+                else:
+                    line['colspan'] = 3                
+                    line['columns'].pop(3)
         return lines
 
     @api.model
@@ -699,17 +716,17 @@ class ReportPartnerLedger(models.AbstractModel):
     def _get_columns_name(self, options):
         columns = [
             {},
-            {'name': _('JRNL')},
-            {'name': _('Account')},
+            #{'name': _('JRNL')},
+            #{'name': _('Account')},
             {'name': _('Ref')},
             {'name': _('Due Date'), 'class': 'date'},
-            {'name': _('Matching Number')},
+            #{'name': _('Matching Number')},
             {'name': _('Initial Balance'), 'class': 'number'},
             {'name': _('Debit'), 'class': 'number'},
             {'name': _('Credit'), 'class': 'number'}]
 
-        if self.user_has_groups('base.group_multi_currency'):
-            columns.append({'name': _('Amount Currency'), 'class': 'number'})
+        #if self.user_has_groups('base.group_multi_currency'):
+        #    columns.append({'name': _('Amount Currency'), 'class': 'number'})
 
         columns.append({'name': _('Balance'), 'class': 'number'})
 
