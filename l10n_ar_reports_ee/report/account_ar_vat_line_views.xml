@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo noupdate="0">
+<odoo>
     <record id="view_account_ar_vat_line_search" model="ir.ui.view">
          <field name="name">account.ar.vat.line.search</field>
          <field name="model">account.ar.vat.line</field>
