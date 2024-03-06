@@ -119,7 +119,7 @@ class AccountImportPadronRetPerc(models.Model):
                 str(date_to)[5:7] + str(date_to)[:4]
             date_from_string = str(date_from)[
                 8:10] + str(date_from)[5:7] + str(date_from)[:4]
-            where += ' and (col3<=%s and col4>=%s);' % (date_from_string,
+            where += ' and (col3::INT<=%s and col4::INT>=%s);' % (date_from_string,
                                                         date_to_string)
         conn = None
         flag_month = False
