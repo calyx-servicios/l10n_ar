@@ -42,6 +42,7 @@ class AccountPadronRetentionPerceptionLine(models.Model):
                     'from_date': self_obj.date_from ,
                     'to_date': self_obj.date_to ,
                     'alicuota_percepcion': self_obj.percentage_perception,
+                    'alicuota_retencion': self_obj.percentage_retention,
                     'partner_id': self_obj.partner_id.id,
                     'padron_line_id': self_obj.id,
                 }
