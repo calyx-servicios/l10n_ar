@@ -27,6 +27,7 @@ class ResPartner(models.Model):
                 padron_control[padron_index].partner_control()
             if rec.line_padron_type_ids:
                 rec.import_padron_server_partner()
+        return return_var
 
     def import_padron_server_partner(self, context={}):
         partner_dic={} #padron_type_id
