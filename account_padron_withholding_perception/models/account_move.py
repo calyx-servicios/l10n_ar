@@ -56,6 +56,11 @@ class AccountMove(models.Model):
                     tags_matched =  line_tax_obj.invoice_repartition_line_ids.filtered(lambda x: padron_type_obj.account_tag_perception_id.id in x.tag_ids.ids)
                     if line_tax_obj.id == padron_type_obj.account_tax_perception_id.id or tags_matched:
                         lines.tax_ids = [(3, line_tax_obj.id)]
+            else:
+                tax_present = any(tax.id == padron_type_obj.account_tax_perception_id.id for tax in lines.tax_ids)
+                if not tax_present:
+                    lines.tax_ids = [(4, padron_type_obj.account_tax_perception_id.id)]
+                    
         if list_id_delete:
             for lines in self.invoice_line_ids:
                 invoice_lines.append((0, 0, {
