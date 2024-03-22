@@ -68,7 +68,7 @@ class AccountMove(models.Model):
                     'tax_ids': [(6, 0, lines.tax_ids.ids)]
                 }))
 
-            self.line_ids = [(5, 0, 0)]
+            self.with_context(dynamic_unlink=True).line_ids = [(5, 0, 0)]
             self.invoice_line_ids = invoice_lines
 
 
