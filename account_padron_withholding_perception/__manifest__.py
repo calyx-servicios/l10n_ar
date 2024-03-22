@@ -6,11 +6,11 @@
         of Withholdings and Perceptions.
     """,
     "author": "Calyx Servicios S.A.",
-    "maintainers": ["PerezGabriela"],
+    "maintainers": ["PerezGabriela", "leandro090685"],
     "website": "http://odoo.calyx-cloud.com.ar/",
     "license": "AGPL-3",
     "category": "Account",
-    "version": "16.0.2.0.0",
+    "version": "16.0.3.0.0",
     "installable": True,
     "application": False,
     "depends": [
