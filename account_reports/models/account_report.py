@@ -60,6 +60,7 @@ class AccountReport(models.AbstractModel):
     filter_unfold_all = None
     filter_hierarchy = None
     filter_partner = None
+    filter_product_category = None
     order_selected_column = None
 
     ####################################################
@@ -496,6 +497,29 @@ class AccountReport(models.AbstractModel):
             partner_category_ids = [int(category) for category in options['partner_categories']]
             domain.append(('partner_id.category_id', 'in', partner_category_ids))
         return domain
+    
+    ####################################################
+    # OPTIONS: product category
+    ####################################################
+
+    @api.model
+    def _init_filter_product_category(self, options, previous_options=None):    
+        if not self.filter_product_category:        
+            return
+
+        options['product_category'] = True
+        options['product_category_ids'] = previous_options and previous_options.get('product_category_ids') or []    
+        selected_product_category_ids = [int(category) for category in options['product_category_ids']]
+        selected_product_categories = selected_product_category_ids and self.env['product.category'].browse(selected_product_category_ids) or self.env['product.category']        
+        options['selected_product_categories'] = selected_product_categories.mapped('name')    
+
+    @api.model
+    def _get_options_product_category_domain(self, options):
+        domain = []    
+        if options.get('product_category_ids'):
+            product_category_ids = [int(category) for category in options['product_category_ids']]
+            domain.append(('product_id.categ_id', 'in', product_category_ids))    
+        return domain
 
     ####################################################
     # OPTIONS: all_entries
@@ -749,6 +773,7 @@ class AccountReport(models.AbstractModel):
         domain += self._get_options_date_domain(options)
         domain += self._get_options_analytic_domain(options)
         domain += self._get_options_partner_domain(options)
+        domain = self._get_options_product_category_domain(options)
         domain += self._get_options_all_entries_domain(options)
         return domain
 
@@ -1135,6 +1160,10 @@ class AccountReport(models.AbstractModel):
             ctx['partner_ids'] = self.env['res.partner'].browse([int(partner) for partner in options['partner_ids']])
         if options.get('partner_categories'):
             ctx['partner_categories'] = self.env['res.partner.category'].browse([int(category) for category in options['partner_categories']])
+        if options.get('product_category_ids'):
+            ctx['product_category'] = self.env['product.category'].browse([int(product_category) for product_category in options['product_category_ids']])
+        if options.get('product_category_ids'):
+            ctx['product_category'] = self.env['product.category'].browse([int(product_category) for product_category in options['product_category_ids']])    
         return ctx
 
     def get_report_informations(self, options):
@@ -1152,6 +1181,10 @@ class AccountReport(models.AbstractModel):
         if options.get('partner'):
             options['selected_partner_ids'] = [self.env['res.partner'].browse(int(partner)).name for partner in options['partner_ids']]
             options['selected_partner_categories'] = [self.env['res.partner.category'].browse(int(category)).name for category in (options.get('partner_categories') or [])]
+        if options.get('analytic_tags') is not None:
+            options['selected_analytic_tag_names'] = [self.env['account.analytic.tag'].browse(int(tag)).name for tag in options['analytic_tags']]
+        if options.get('product_category') is not None:
+            options['selected_product_category_names'] = [self.env['product.category'].browse(int(category)).name for category in options['product_category_ids']]
 
         # Check whether there are unposted entries for the selected period or not (if the report allows it)
         if options.get('date') and options.get('all_entries') is not None:

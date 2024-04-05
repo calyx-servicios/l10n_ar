@@ -214,6 +214,11 @@ msgid "<span class=\"fa fa-folder-open\"/> Partners"
 msgstr "<span class=\"fa fa-folder-open\"/> Empresas"
 
 #. module: account_reports
+#: model_terms:ir.ui.view,arch_db:account_reports.search_template_product_category
+msgid "<span class=\"fa fa-folder-open\"/> Product Category:"
+msgstr "<span class=\"fa fa-folder-open\"/> Categorías de productos:"
+
+#. module: account_reports
 #: model_terms:ir.ui.view,arch_db:account_reports.res_config_settings_view_form
 msgid ""
 "<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
@@ -1889,6 +1894,11 @@ msgid "Posted Entries Only"
 msgstr "Sólo asientos contabilizados"
 
 #. module: account_reports
+#: model_terms:ir.ui.view,arch_db:account_reports.search_template_extra_options
+msgid "Filter lines without product or category"
+msgstr "Filtrar líneas sin producto o categoría"
+
+#. module: account_reports
 #: model:account.financial.html.report.line,name:account_reports.account_financial_report_prepayements0
 msgid "Prepayments"
 msgstr "Pre-pagos"
@@ -2540,10 +2550,3 @@ msgstr "Asientos Contables no Publicados"
 #: model_terms:ir.ui.view,arch_db:account_reports.line_template_general_ledger_report
 msgid "⇒ journal items"
 msgstr "⇒ entrada contable"
-
-#. module: account_reports
-#. openerp-web
-#: code:addons/account_reports/static/src/js/account_reports.js:0
-#, python-format
-msgid "Clear"
-msgstr "Limpiar"
