@@ -17,6 +17,7 @@ class L10nARVatBook(models.AbstractModel):
 
     filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month'}
     filter_all_entries = False
+    filter_product_category = True
 
     def print_pdf(self, options):
         options.update({
@@ -30,6 +31,24 @@ class L10nARVatBook(models.AbstractModel):
         })
         return super(L10nARVatBook, self).print_xlsx(options)
 
+    @api.model
+    def _get_options_domain(self, options):
+        # OVERRIDE
+        domain = super(L10nARVatBook, self)._get_options_domain(options)
+        # Filter accounts based on the search bar.
+        product_category_ids = options.get('product_category_ids', [])
+        if options.get('filter_all_entries'):
+            domain += [
+                '|',
+                ('account_id.name', 'ilike', options['filter_accounts']),
+                ('account_id.code', 'ilike', options['filter_accounts'])
+            ]
+        for tuple in domain:
+            if 'product_id.categ_id' in tuple:
+                domain.remove(tuple)
+                break
+        return domain, product_category_ids
+    
     @api.model
     def _get_dynamic_columns(self, options):
         """ Show or not the VAT 2.5% and VAT 5% columns if this ones are active/inactive """
@@ -59,8 +78,67 @@ class L10nARVatBook(models.AbstractModel):
             {'name': _('Total'), 'class': 'number'},
         ]
 
+    def total_less(self, total_less={}, tax_amounts=[], taxed=0, move_id=()):
+        if not total_less:
+            total_less = {
+                'taxed': 0.0,
+                'not_taxed': 0.0,
+                'vat_25': 0.0,
+                'vat_5': 0.0,
+                'vat_10': 0.0,
+                'vat_21': 0.0,
+                'vat_27': 0.0,
+                'vat_per': 0.0,
+                'other_taxes': 0.0,
+                'total': 0.0,
+            }
+        if tax_amounts:
+            for tax in tax_amounts:
+                tax_id = tax['id']
+                tax_value = self.env['account.tax'].browse(tax_id).amount
+                tax_amount =tax['amount']
+                tax_base = tax['base']
+
+                if tax_value == 21.0:
+                    total_less['vat_21'] += tax_amount
+                elif tax_value == 27.0:
+                    total_less['vat_27'] += tax_amount
+                elif tax_value == 2.5:
+                    total_less['vat_25'] += tax_amount
+                elif tax_value == 5.0:
+                    total_less['vat_5'] += tax_amount
+                elif tax_value == 10.5:
+                    total_less['vat_10'] += tax_amount
+                else:
+                    total_less['other_taxes'] += tax_amount
+            total_less['taxed'] += tax_base
+            if total_less['total'] != 0.0:
+                total_less['total'] = 0.0
+        return total_less
+    
+    def decimal(self, value):
+        decimals = 0
+        str_value = str(value)
+        str_decimals = str_value.find('.')
+        two_decimals_int = int(value * 100)
+        two_decimals_float = two_decimals_int/100
+        
+        if str_decimals == -1:
+            len_decimals = 0
+        else:
+            len_decimals = len(str_value[str_decimals + 1:])
+        if len_decimals < 3:
+            return two_decimals_float
+        elif len_decimals > 3:
+            decimals = int(str_value[str_decimals + 3: str_decimals + 4])
+        elif len_decimals == 3:
+            decimals = int(str_value[str_decimals + 3: str_decimals + 3]) * 10 
+        if decimals > 50:
+            two_decimals_float += 0.01
+        return two_decimals_float
+    
     @api.model
-    def _get_lines(self, options, line_id=None):
+    def _get_lines(self, options, line_id=None):        
         journal_type = options.get('journal_type')
         if not journal_type:
             journal_type = self.env.context.get('journal_type', 'sale')
@@ -69,55 +147,119 @@ class L10nARVatBook(models.AbstractModel):
         line_id = 0
         sign = 1.0 if journal_type == 'purchase' else -1.0
         domain = self._get_lines_domain(options)
-
+        options_domain, category_filter = self._get_options_domain (options=options)
+        domain += options_domain
         dynamic_columns = [item.get('sql_var') for item in self._get_dynamic_columns(options)]
         totals = {}.fromkeys(['taxed', 'not_taxed'] + dynamic_columns + ['vat_10', 'vat_21', 'vat_27', 'vat_per', 'other_taxes', 'total'], 0)
-        for rec in self.env['account.ar.vat.line'].search_read(domain):
-            taxed = rec['base_25'] + rec['base_5'] + rec['base_10'] + rec['base_21'] + rec['base_27']
-            other_taxes = rec['other_taxes']
-            totals['taxed'] += taxed
-            totals['not_taxed'] += rec['not_taxed']
-            for item in dynamic_columns:
-                totals[item] += rec[item]
-            totals['vat_10'] += rec['vat_10']
-            totals['vat_21'] += rec['vat_21']
-            totals['vat_27'] += rec['vat_27']
-            totals['vat_per'] += rec['vat_per']
-            totals['other_taxes'] += other_taxes
-            totals['total'] += rec['total']
+        total_less = {}
+        changes = False
+        search_read = self.env['account.ar.vat.line'].search_read(domain)
 
-            if rec['type'] in ['in_invoice', 'in_refund']:
-                caret_type = 'account.invoice.in'
-            elif rec['type'] in ['out_invoice', 'out_refund']:
-                caret_type = 'account.invoice.out'
-            else:
-                caret_type = 'account.move'
-            lines.append({
-                'id': rec['id'],
-                'name': format_date(self.env, rec['invoice_date']),
-                'class': 'date' + (' text-muted' if rec['state'] != 'posted' else ''),
-                'level': 2,
-                'model': 'account.ar.vat.line',
-                'caret_options': caret_type,
-                'columns': [
-                    {'name': rec['move_name']},
-                    {'name': rec['partner_name']},
-                    {'name': rec['afip_responsibility_type_name']},
-                    {'name': rec['cuit']},
-                    {'name': self.format_value(sign * taxed)},
-                    {'name': self.format_value(sign * rec['not_taxed'])},
-                    ] + [
-                        {'name': self.format_value(sign * rec[item])} for item in dynamic_columns] + [
-                    {'name': self.format_value(sign * rec['vat_10'])},
-                    {'name': self.format_value(sign * rec['vat_21'])},
-                    {'name': self.format_value(sign * rec['vat_27'])},
-                    {'name': self.format_value(sign * rec['vat_per'])},
-                    {'name': self.format_value(sign * other_taxes)},
-                    {'name': self.format_value(sign * rec['total'])},
-                ],
-            })
-            line_id += 1
+        for rec in search_read:            
+            total_less = {}
+            len_invoice_line_ids = len(rec['invoice_line_ids'])
+            if len_invoice_line_ids > 0:
+                for line_id in rec['invoice_line_ids']:
+                    invoice_line = self.env['account.move.line'].browse(line_id)
+                    taxes = invoice_line.tax_ids.filtered(lambda tax: tax.type_tax_use == 'sale') if journal_type == 'sales' else invoice_line.tax_ids.filtered(lambda tax: tax.type_tax_use == 'purchase')
+                    
+                    tax_amount = taxes.compute_all(
+                        invoice_line.price_unit,
+                        invoice_line.currency_id,
+                        invoice_line.quantity,
+                        product=invoice_line.product_id,
+                        partner=self.env['res.partner'].browse(rec['partner_id'][0])
+                    )
+                    if category_filter: 
+                        if invoice_line.product_id.categ_id.id not in category_filter:
+                            total_less = self.total_less(total_less, tax_amount['taxes'], f, rec['move_id'])
+                            len_invoice_line_ids -= 1
+                            f += 1
+                        else:
+                            tax_amount = []
+                            total_less = self.total_less(total_less=total_less)
+                    else:
+                        tax_amount = []
+                        total_less = self.total_less(total_less=total_less)
 
+                if len_invoice_line_ids > 0:
+                    less_vat_10 = self.decimal(total_less['vat_10'])
+                    less_vat_21 = self.decimal(total_less['vat_21'])
+                    #less_vat_25 = self.decimal(total_less['vat_25'])
+                    #less_vat_5 = self.decimal(total_less['vat_5'])
+                    less_vat_21 = self.decimal(total_less['vat_21'])
+                    less_vat_27 = self.decimal(total_less['vat_27'])
+                    less_vat_per = self.decimal(total_less['vat_per'])
+                    less_taxed = self.decimal(total_less['taxed'])
+                    less_not_taxed = self.decimal(total_less['not_taxed'])
+                    less_other_taxes = self.decimal(total_less['other_taxes'])
+                    #less_total = self.decimal(total_less['total'])
+
+                    taxed = rec['base_25'] + rec['base_5'] + rec['base_10'] + rec['base_21'] + rec['base_27']
+                    other_taxes = rec['other_taxes']
+                    if rec['type'] in ['in_invoice', 'in_refund']:
+                        caret_type = 'account.invoice.in'
+                    elif rec['type'] in ['out_invoice', 'out_refund']:
+                        caret_type = 'account.invoice.out'
+                    else:
+                        caret_type = 'account.move'
+
+                    if len_invoice_line_ids != len(rec['invoice_line_ids']):
+                        if max(abs(other_taxes * sign), abs(less_other_taxes)) != 0 and abs(other_taxes * sign + less_other_taxes) / max(abs(other_taxes * sign ), abs(less_other_taxes)) <= 0.01:
+                            oth_taxes = sign *  self.decimal(other_taxes)
+                        else:
+                            oth_taxes = less_other_taxes
+                        changes = True
+                    else:
+                        changes = False
+
+                    append_taxed = sign * (taxed) if not changes else (sign * (self.decimal(taxed - less_taxed)) if less_taxed != 0 else taxed)
+                    append_not_taxed =  sign * rec['not_taxed'] if not changes else (sign * (rec['not_taxed']) if less_not_taxed != 0 else rec['not_taxed'])
+                    append_vat_10 = sign * rec['vat_10'] if not changes else (sign * (self.decimal(rec['vat_10'] - less_vat_10)) if less_vat_10 != 0 else rec['vat_10'])
+                    append_vat_21 = sign * rec['vat_21'] if not changes else (sign * (self.decimal(rec['vat_21'] - less_vat_21)) if less_vat_21 != 0 else rec['vat_21'])
+                    append_vat_27 = sign * rec['vat_27'] if not changes else (sign * (self.decimal(rec['vat_27'] - less_vat_27)) if less_vat_27 != 0 else rec['vat_27'])
+                    append_vat_per = sign * rec['vat_per'] if not changes else (sign * (rec['vat_per']) if less_vat_per != 0 else rec['vat_per'])                        
+                    append_other_taxes = sign * rec['other_taxes'] if not changes else (sign * (self.decimal(other_taxes - oth_taxes)) if less_other_taxes != 0 else other_taxes)                    
+                    append_total = sign * rec['total'] if not changes else (sign * (self.decimal(append_taxed + append_not_taxed + append_vat_10 + append_vat_21 + append_vat_27+ append_vat_per + append_other_taxes)))
+                    totals['taxed'] += - append_taxed
+                    totals['not_taxed'] += rec['not_taxed']
+
+                    for item in dynamic_columns:
+                        totals[item] += rec[item]
+                    totals['vat_10'] += - append_vat_10
+                    totals['vat_21'] += - append_vat_21
+
+                    totals['vat_27'] += - append_vat_27
+                    totals['vat_per'] += rec['vat_per']
+                    totals['other_taxes'] += - append_other_taxes
+                    totals['total'] += append_total
+
+                    lines.append({
+                        'id': rec['id'],
+                        'name': format_date(self.env, rec['invoice_date']),
+                        'class': 'date' + (' text-muted' if rec['state'] != 'posted' else ''),
+                        'level': 2,
+                        'model': 'account.ar.vat.line',
+                        'caret_options': caret_type,
+                        'columns': [
+                            {'name': rec['move_name']},
+                            {'name': rec['partner_name']},
+                            {'name': rec['afip_responsibility_type_name']},
+                            {'name': rec['cuit']},
+                            {'name': self.format_value(append_taxed)},
+                            {'name': self.format_value(append_not_taxed)},
+                            ] + [
+                                {'name': self.format_value(sign * rec[item])} for item in dynamic_columns] + [
+                            {'name': self.format_value(append_vat_10)},
+                            {'name': self.format_value(append_vat_21)},
+                            {'name': self.format_value(append_vat_27)},
+                            {'name': self.format_value(append_vat_per)},
+                            {'name': self.format_value(append_other_taxes)},
+                            {'name': self.format_value(append_total)},
+                        ],
+                    })
+                    line_id += 1
+        totals['total'] = totals['taxed'] + totals['not_taxed'] + totals['vat_10'] + totals['vat_21'] + totals['vat_27'] + totals['vat_per'] + totals['other_taxes']
         lines.append({
             'id': 'total',
             'name': _('Total'),

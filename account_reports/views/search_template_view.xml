@@ -116,6 +116,7 @@
         </a>
         <div class="dropdown-menu o_filters_menu" role="menu">
             <a role="menuitem" class="dropdown-item js_account_report_bool_filter" t-if="options.get('all_entries') != None" title="Include unposted entries" data-filter="all_entries" groups="account.group_account_user">Include Unposted Entries</a>
+            <a role="menuitem" class="dropdown-item js_account_report_bool_filter" t-if="options.get('filter_without_category') != None" title="No category entries" data-filter="filter_without_category" groups="account.group_account_user">Filter lines without product or category</a>
             <a role="menuitem" class="dropdown-item js_account_report_bool_filter" t-if="options.get('hierarchy') != None" title="Hierarchy" data-filter="hierarchy">Hierarchy and Subtotals</a>
             <a role="menuitem" class="dropdown-item js_account_report_bool_filter" t-if="options.get('unreconciled') != None" title="Unreconciled" data-filter="unreconciled">Only Show Unreconciled Entries</a>
             <a role="menuitem" class="dropdown-item js_account_report_bool_filter" t-if="options.get('unfold_all') != None" title="Unfold" data-filter="unfold_all">Unfold All</a>
@@ -221,6 +222,15 @@
         </ul>
     </template>
 
+    <template id="search_template_product_category">
+        <a t-if="options.get('product_category')" type="button" class="dropdown-toggle account_product_category_filter" data-toggle="dropdown">
+            <span class="fa fa-folder-open"/> Product Category:
+        </a>
+        <ul class="dropdown-menu o_filters_menu" role="menu">
+            <li class="o_account_report_search js_account_product_category_m2m"/>
+        </ul>
+    </template>
+
     <template id="search_template">
         <div class="btn-group o_dropdown o_account_reports_filter_date" t-if="options.get('date') != None">
             <t t-call="account_reports.search_template_date_filter"/>
@@ -242,6 +252,9 @@
         </div>
         <div class="btn-group o_dropdown o_account_reports_filter_partner" t-if="options.get('partner')">
             <t t-call="account_reports.search_template_partner"/>
+        </div>
+        <div class="btn-group o_dropdown o_account_reports_filter_product_category" t-if="options.get('product_category')">
+            <t t-call="account_reports.search_template_product_category"/>
         </div>
         <div id="extra_options_dropdown" class="btn-group o_dropdown o_account_reports_filter_bool" t-if="options.get('cash_basis') != None or options.get('all_entries') != None or options.get('unfold_all') != None">
             <t t-call="account_reports.search_template_extra_options"/>

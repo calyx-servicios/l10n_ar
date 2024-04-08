@@ -234,7 +234,18 @@ class AccountArVatLine(models.Model):
     company_id = fields.Many2one('res.company', 'Company', readonly=True, auto_join=True)
     company_currency_id = fields.Many2one(related='company_id.currency_id', readonly=True)
     move_id = fields.Many2one('account.move', string='Entry', auto_join=True)
-
+    invoice_line_ids = fields.One2many('account.move.line', 'move_id', string='Invoice lines', copy=False, readonly=True,
+        domain=[('exclude_from_invoice_tab', '=', False)], states={'draft': [('readonly', False)]})
+    
+    @api.onchange('move_id')
+    def _onchange_move_id(self):
+        for record in self:
+            if record.move_id:
+                # Filtra las líneas del movimiento que son facturas
+                invoice_lines = record.move_id.line_ids.filtered(lambda line: line.invoice_id)
+                record.invoice_line_ids = invoice_lines
+            else:
+                record.invoice_line_ids = False
     def open_journal_entry(self):
         self.ensure_one()
         return self.move_id.get_formview_action()
