@@ -54,7 +54,7 @@ class AccountImportPadronRetPerc(models.Model):
                         raise ValidationError(_("Error: The contact {} with ID({}) does not have a VAT identification number.".format(partner_obj.name, partner_obj.id)))
                     if partner_obj.l10n_latam_identification_type_id.country_id.code != 'AR':
                         raise ValidationError(_("Error: The contact {} with ID({}) is not from Argentina.".format(partner_obj.name, partner_obj.id)))
-                    partner_dic[partner_obj.vat] = partner_obj
+                    partner_dic[partner_obj.vat.replace("-", "")] = partner_obj
 
             date_from = str(import_obj.default_date_from)[
                 :4] + str(import_obj.default_date_from)[5:7] + str(import_obj.default_date_from)[8:10]
