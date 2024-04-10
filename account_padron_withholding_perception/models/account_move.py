@@ -36,26 +36,32 @@ class AccountMove(models.Model):
         invoice_lines = []
 
         padron_type_obj = self.partner_id.line_padron_type_ids.filtered(lambda x: x.company_id.id == self.company_id.id)
+        
+        for padron in padron_type_obj:
+            for lines in self.invoice_line_ids:
+                
+                # Get alicuot for date and padron.
+                corresponding_alicuota = self.partner_id.get_current_alicuota(padron, self.invoice_date, self.company_id)
 
-        for lines in self.invoice_line_ids:
+                if not corresponding_alicuota:
+                    continue
 
-            # Get alicuot for date and padron.
-            corresponding_alicuota = self.partner_id.get_current_alicuota(padron_type_obj, self.invoice_date, self.company_id)
+                base_amount = self.amount_untaxed
+                calculated_minimum = base_amount * corresponding_alicuota.alicuota_percepcion / 100
 
-            if not corresponding_alicuota:
-                continue
+                if base_amount < padron.minimum_base_perception or calculated_minimum < padron.minimum_calcule_perception:
+                    list_id_delete.append(lines.id)
 
-            base_amount = self.amount_untaxed
-            calculated_minimum = base_amount * corresponding_alicuota.alicuota_percepcion / 100
+                    for line_tax_obj in lines.tax_ids:
 
-            if base_amount < padron_type_obj.minimum_base_perception or calculated_minimum < padron_type_obj.minimum_calcule_perception:
-                list_id_delete.append(lines.id)
+                        tags_matched =  line_tax_obj.invoice_repartition_line_ids.filtered(lambda x: padron.account_tag_perception_id.id in x.tag_ids.ids)
+                        if line_tax_obj.id == padron.account_tax_perception_id.id or tags_matched:
+                            lines.tax_ids = [(3, line_tax_obj.id)]
+                else:
+                    tax_present = any(tax.id == padron.account_tax_perception_id.id for tax in lines.tax_ids)
+                    if not tax_present:
+                        lines.tax_ids = [(4, padron.account_tax_perception_id.id)]
 
-                for line_tax_obj in lines.tax_ids:
-
-                    tags_matched =  line_tax_obj.invoice_repartition_line_ids.filtered(lambda x: padron_type_obj.account_tag_perception_id.id in x.tag_ids.ids)
-                    if line_tax_obj.id == padron_type_obj.account_tax_perception_id.id or tags_matched:
-                        lines.tax_ids = [(3, line_tax_obj.id)]
         if list_id_delete:
             for lines in self.invoice_line_ids:
                 invoice_lines.append((0, 0, {
