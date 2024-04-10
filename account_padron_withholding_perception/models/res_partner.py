@@ -52,7 +52,7 @@ class ResPartner(models.Model):
     def import_padron_server_partner(self, context={}):
         partner_dic={} #padron_type_id
         for partner_obj in self:
-            partner_dic[partner_obj.vat] = partner_obj
+            partner_dic[partner_obj.vat.replace("-", "")] = partner_obj
             context['partner_dic'] = partner_dic
             for padron_obj in partner_obj.line_padron_type_ids:
                 result_ids = self.env['account.import.padron.ret.perc'].search([
