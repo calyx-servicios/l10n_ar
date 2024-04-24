@@ -2,6 +2,7 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 import logging, csv, psycopg2
+from datetime import datetime
 
 _logger = logging.getLogger(__name__)
 
@@ -121,6 +122,13 @@ class AccountImportPadronRetPerc(models.Model):
         #        8:10] + str(date_from)[5:7] + str(date_from)[:4]
         #    where += ' and (col3::INT<=%s and col4::INT>=%s);' % (date_from_string,
         #                                                date_to_string)
+
+        date_to_obj = datetime.strptime(date_to, '%Y%m%d')
+        date_from_obj = datetime.strptime(date_from, '%Y%m%d')
+
+        date_to_str = date_to_obj.strftime('%d%m%Y')
+        date_from_str = date_from_obj.strftime('%d%m%Y')
+
         conn = None
         flag_month = False
         try:
@@ -132,7 +140,20 @@ class AccountImportPadronRetPerc(models.Model):
             conn = self._get_conn(import_obj)
             cur = conn.cursor()
             cur.execute(consulta)
-            for line in cur.fetchall():
+            result = cur.fetchall()
+            
+            # Verifico qué CUITs están presentes en la consulta
+            cuits_consulta = list(set(str(item[2]) for item in result))
+            
+            # Verificar qué CUITs están presentes en partner_dic pero no en la consulta
+            cuits_faltantes = [cuit for cuit in partner_dic if cuit not in cuits_consulta]
+
+            if cuits_faltantes:
+                # Si hay CUITs faltantes, agregarlos a la consulta
+                for cuit in cuits_faltantes:
+                    result.append((date_from_str, date_to_str, cuit, str(import_obj.default_percentage_retention)))
+            
+            for line in result:
                 string_from = str(line[0])
                 if len(string_from) < 8:
                     string_from = '0' + string_from
@@ -191,8 +212,20 @@ class AccountImportPadronRetPerc(models.Model):
             conn = self._get_conn(import_obj)
             cur = conn.cursor()
             cur.execute(consulta)
+            result = cur.fetchall()
+            
+            # Verifico qué CUITs están presentes en la consulta
+            cuits_consulta = list(set(str(item[2]) for item in result))
+            
+            # Verificar qué CUITs están presentes en partner_dic pero no en la consulta
+            cuits_faltantes = [cuit for cuit in partner_dic if cuit not in cuits_consulta]
 
-            for line in cur.fetchall():
+            if cuits_faltantes:
+                # Si hay CUITs faltantes, agregarlos a la consulta
+                for cuit in cuits_faltantes:
+                    result.append((date_from_str, date_to_str, cuit, str(import_obj.default_percentage_perception)))
+
+            for line in result:
                 string_from = str(line[0])
                 if len(string_from) < 8:
                     string_from = '0' + string_from
