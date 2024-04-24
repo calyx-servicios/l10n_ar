@@ -151,7 +151,7 @@ class AccountImportPadronRetPerc(models.Model):
             if cuits_faltantes:
                 # Si hay CUITs faltantes, agregarlos a la consulta
                 for cuit in cuits_faltantes:
-                    result.append((date_from_str, date_to_str, cuit, str(import_obj.default_percentage_retention)))
+                    result.append((date_from_str, date_to_str, cuit, str(import_obj.default_percentage_retention).replace('.', ',')))
             
             for line in result:
                 string_from = str(line[0])
@@ -223,7 +223,7 @@ class AccountImportPadronRetPerc(models.Model):
             if cuits_faltantes:
                 # Si hay CUITs faltantes, agregarlos a la consulta
                 for cuit in cuits_faltantes:
-                    result.append((date_from_str, date_to_str, cuit, str(import_obj.default_percentage_perception)))
+                    result.append((date_from_str, date_to_str, cuit, str(import_obj.default_percentage_perception).replace('.', ',')))
 
             for line in result:
                 string_from = str(line[0])
