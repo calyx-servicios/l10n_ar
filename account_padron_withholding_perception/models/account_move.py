@@ -44,8 +44,10 @@ class AccountMove(models.Model):
 
             if not corresponding_alicuota:
                 continue
-
-            base_amount = self.amount_untaxed
+            if self.currency_id.id != 19: #En caso de que la moneda no sea $
+                base_amount = self.amount_untaxed * self.currency_id.inverse_rate
+            else:
+                base_amount = self.amount_untaxed
             calculated_minimum = base_amount * corresponding_alicuota.alicuota_percepcion / 100
 
             if base_amount < padron_type_obj.minimum_base_perception or calculated_minimum < padron_type_obj.minimum_calcule_perception:
