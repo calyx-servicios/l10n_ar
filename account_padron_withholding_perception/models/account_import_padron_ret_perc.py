@@ -43,6 +43,7 @@ class AccountImportPadronRetPerc(models.Model):
             import_obj.sudo().write({'state': 'close'})
 
     def import_padron_server(self, context=None):
+        error_contacts = []
         partner_dic = {}
         for import_obj in self:
             _logger.info("import_padron_server()--> for %s" % str(import_obj))
@@ -51,10 +52,19 @@ class AccountImportPadronRetPerc(models.Model):
             else:
                 for partner_obj in import_obj.padron_type_id.line_partner_ids:
                     if not partner_obj.vat:
-                        raise ValidationError(_("Error: The contact {} with ID({}) does not have a VAT identification number.".format(partner_obj.name, partner_obj.id)))
-                    if partner_obj.l10n_latam_identification_type_id.country_id.code != 'AR':
-                        raise ValidationError(_("Error: The contact {} with ID({}) is not from Argentina.".format(partner_obj.name, partner_obj.id)))
-                    partner_dic[partner_obj.vat.replace("-", "")] = partner_obj
+                        error_contacts.append(partner_obj)
+                    elif partner_obj.l10n_latam_identification_type_id.country_id.code != 'AR':
+                        error_contacts.append(partner_obj)
+                    else:
+                        partner_dic[partner_obj.vat.replace("-", "")] = partner_obj
+            if error_contacts:
+                error_msgs = [
+                    _("Error: The contact {} with ID({}) does not have a VAT identification number.").format(contact.name, contact.id)
+                    if not contact.vat else
+                    _("Error: The contact {} with ID({}) is not from Argentina.").format(contact.name, contact.id)
+                    for contact in error_contacts
+                ]
+                raise ValidationError('\n'.join(error_msgs))
 
             date_from = str(import_obj.default_date_from)[
                 :4] + str(import_obj.default_date_from)[5:7] + str(import_obj.default_date_from)[8:10]
