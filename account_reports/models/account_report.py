@@ -497,8 +497,8 @@ class AccountReport(models.AbstractModel):
             partner_category_ids = [int(category) for category in options['partner_categories']]
             domain.append(('partner_id.category_id', 'in', partner_category_ids))
         return domain
-    
-    ####################################################
+
+####################################################
     # OPTIONS: product category
     ####################################################
 
@@ -520,7 +520,7 @@ class AccountReport(models.AbstractModel):
             product_category_ids = [int(category) for category in options['product_category_ids']]
             domain.append(('product_id.categ_id', 'in', product_category_ids))    
         return domain
-
+    
     ####################################################
     # OPTIONS: all_entries
     ####################################################
@@ -1181,8 +1181,6 @@ class AccountReport(models.AbstractModel):
         if options.get('partner'):
             options['selected_partner_ids'] = [self.env['res.partner'].browse(int(partner)).name for partner in options['partner_ids']]
             options['selected_partner_categories'] = [self.env['res.partner.category'].browse(int(category)).name for category in (options.get('partner_categories') or [])]
-        if options.get('analytic_tags') is not None:
-            options['selected_analytic_tag_names'] = [self.env['account.analytic.tag'].browse(int(tag)).name for tag in options['analytic_tags']]
         if options.get('product_category') is not None:
             options['selected_product_category_names'] = [self.env['product.category'].browse(int(category)).name for category in options['product_category_ids']]
 
