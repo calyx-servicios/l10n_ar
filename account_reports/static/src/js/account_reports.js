@@ -501,6 +501,22 @@ odoo.define('account_reports.account_report', function (require) {
                 }
             });
     
+            // button partner filter
+            if (this.report_options.partner) {            
+                var self = this;  
+                var fields = {};  
+                var data = {};
+                var $clearPartnersButton = $('<button>', {
+                    text: _t('Clear'),
+                    class: 'clear-partners-btn',
+                    click: function() {
+                        self.trigger_up('value_changed', data);
+                        delete self.M2MFilters;
+                    }
+                });
+                this.$searchview_buttons.find('.js_account_partner_m2m').append($clearPartnersButton);
+            }
+            
             // partner filter
             if (this.report_options.partner) {
                 if (!this.M2MFilters) {
@@ -526,11 +542,10 @@ odoo.define('account_reports.account_report', function (require) {
                 } else {
                     this.$searchview_buttons.find('.js_account_partner_m2m').append(this.M2MFilters.$el);
                 }
-                console.log('this.searchview_buttons partner',this.$searchview_buttons)
             }
-    
-             // button product category clear filter
-             if (this.report_options.product_category) {            
+            
+            // button product category clear filter
+            if (this.report_options.product_category) {            
                 var self = this;  
                 var fields = {};  
                 var data = {};
@@ -580,7 +595,7 @@ odoo.define('account_reports.account_report', function (require) {
                     var fields = {};
                     if (this.report_options.analytic_accounts) {
                         fields['analytic_accounts'] = {
-                            label: 'Testing',//_t('Accounts'),
+                            label: _t('Accounts'),
                             modelName: 'account.analytic.account',
                             value: this.report_options.analytic_accounts.map(Number),
                         };

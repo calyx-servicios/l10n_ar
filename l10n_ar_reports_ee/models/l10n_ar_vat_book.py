@@ -78,7 +78,7 @@ class L10nARVatBook(models.AbstractModel):
             {'name': _('Total'), 'class': 'number'},
         ]
 
-    def total_less(self, total_less={}, tax_amounts=[], taxed=0, move_id=()):
+    def total_less(self, total_less={}, tax_amounts=[]):
         if not total_less:
             total_less = {
                 'taxed': 0.0,
@@ -161,7 +161,7 @@ class L10nARVatBook(models.AbstractModel):
             if len_invoice_line_ids > 0:
                 for line_id in rec['invoice_line_ids']:
                     invoice_line = self.env['account.move.line'].browse(line_id)
-                    taxes = invoice_line.tax_ids.filtered(lambda tax: tax.type_tax_use == 'sale') if journal_type == 'sales' else invoice_line.tax_ids.filtered(lambda tax: tax.type_tax_use == 'purchase')
+                    taxes = invoice_line.tax_ids.filtered(lambda tax: tax.type_tax_use == 'sale') if journal_type == 'sale' else invoice_line.tax_ids.filtered(lambda tax: tax.type_tax_use == 'purchase')
                     
                     tax_amount = taxes.compute_all(
                         invoice_line.price_unit,
@@ -172,28 +172,26 @@ class L10nARVatBook(models.AbstractModel):
                     )
                     if category_filter: 
                         if invoice_line.product_id.categ_id.id not in category_filter:
-                            total_less = self.total_less(total_less, tax_amount['taxes'], f, rec['move_id'])
+                            total_less = self.total_less(total_less, tax_amount['taxes'])
                             len_invoice_line_ids -= 1
-                            f += 1
                         else:
                             tax_amount = []
                             total_less = self.total_less(total_less=total_less)
                     else:
                         tax_amount = []
                         total_less = self.total_less(total_less=total_less)
-
                 if len_invoice_line_ids > 0:
-                    less_vat_10 = self.decimal(total_less['vat_10'])
-                    less_vat_21 = self.decimal(total_less['vat_21'])
-                    #less_vat_25 = self.decimal(total_less['vat_25'])
-                    #less_vat_5 = self.decimal(total_less['vat_5'])
-                    less_vat_21 = self.decimal(total_less['vat_21'])
-                    less_vat_27 = self.decimal(total_less['vat_27'])
-                    less_vat_per = self.decimal(total_less['vat_per'])
-                    less_taxed = self.decimal(total_less['taxed'])
-                    less_not_taxed = self.decimal(total_less['not_taxed'])
-                    less_other_taxes = self.decimal(total_less['other_taxes'])
-                    #less_total = self.decimal(total_less['total'])
+                    less_vat_10 = - self.decimal(total_less['vat_10']) if journal_type == 'sale' else self.decimal(total_less['vat_10'])
+                    less_vat_21 = - self.decimal(total_less['vat_21']) if journal_type == 'sale' else self.decimal(total_less['vat_21'])
+                    #less_vat_25 = - self.decimal(total_less['vat_25']) if journal_type == 'sale' else self.decimal(total_less['vat_25'])
+                    #less_vat_5 = - self.decimal(total_less['vat_5']) if journal_type == 'sale' else self.decimal(total_less['vat_5'])
+                    less_vat_21 = - self.decimal(total_less['vat_21']) if journal_type == 'sale' else self.decimal(total_less['vat_21'])
+                    less_vat_27 = - self.decimal(total_less['vat_27']) if journal_type == 'sale' else self.decimal(total_less['vat_27'])
+                    less_vat_per = - self.decimal(total_less['vat_per']) if journal_type == 'sale' else self.decimal(total_less['vat_per'])
+                    less_taxed = - self.decimal(total_less['taxed']) if journal_type == 'sale' else self.decimal(total_less['taxed'])
+                    less_not_taxed = - self.decimal(total_less['not_taxed']) if journal_type == 'sale' else self.decimal(total_less['not_taxed'])
+                    less_other_taxes = - self.decimal(total_less['other_taxes']) if journal_type == 'sale' else self.decimal(total_less['other_taxes'])
+                    #less_total = - self.decimal(total_less['total']) if journal_type == 'sale' else self.decimal(total_less['total'])
 
                     taxed = rec['base_25'] + rec['base_5'] + rec['base_10'] + rec['base_21'] + rec['base_27']
                     other_taxes = rec['other_taxes']
@@ -206,34 +204,35 @@ class L10nARVatBook(models.AbstractModel):
 
                     if len_invoice_line_ids != len(rec['invoice_line_ids']):
                         if max(abs(other_taxes * sign), abs(less_other_taxes)) != 0 and abs(other_taxes * sign + less_other_taxes) / max(abs(other_taxes * sign ), abs(less_other_taxes)) <= 0.01:
-                            oth_taxes = sign *  self.decimal(other_taxes)
+                            oth_taxes = sign * - self.decimal(other_taxes) if journal_type == 'sale' else self.decimal(other_taxes)
                         else:
-                            oth_taxes = less_other_taxes
+                            oth_taxes = - less_other_taxes if journal_type == 'sale' else less_other_taxes
                         changes = True
                     else:
                         changes = False
-
-                    append_taxed = sign * (taxed) if not changes else (sign * (self.decimal(taxed - less_taxed)) if less_taxed != 0 else taxed)
-                    append_not_taxed =  sign * rec['not_taxed'] if not changes else (sign * (rec['not_taxed']) if less_not_taxed != 0 else rec['not_taxed'])
-                    append_vat_10 = sign * rec['vat_10'] if not changes else (sign * (self.decimal(rec['vat_10'] - less_vat_10)) if less_vat_10 != 0 else rec['vat_10'])
-                    append_vat_21 = sign * rec['vat_21'] if not changes else (sign * (self.decimal(rec['vat_21'] - less_vat_21)) if less_vat_21 != 0 else rec['vat_21'])
-                    append_vat_27 = sign * rec['vat_27'] if not changes else (sign * (self.decimal(rec['vat_27'] - less_vat_27)) if less_vat_27 != 0 else rec['vat_27'])
+                    append_taxed = sign * (taxed) if not changes else (sign * (self.decimal(taxed - less_taxed)) if less_taxed != 0 else sign * taxed)
+                    append_not_taxed =  sign * rec['not_taxed'] if not changes else (sign * (rec['not_taxed']) if less_not_taxed != 0 else sign * rec['not_taxed'])
+                    append_vat_10 = sign * rec['vat_10'] if not changes else (sign * (self.decimal(rec['vat_10'] - less_vat_10)) if less_vat_10 != 0 else sign * rec['vat_10'])
+                    append_vat_21 = sign * rec['vat_21'] if not changes else (sign * (self.decimal(rec['vat_21'] - less_vat_21)) if less_vat_21 != 0 else sign * rec['vat_21'])
+                    append_vat_27 = sign * rec['vat_27'] if not changes else (sign * (self.decimal(rec['vat_27'] - less_vat_27)) if less_vat_27 != 0 else sign * rec['vat_27'])
                     append_vat_per = sign * rec['vat_per'] if not changes else (sign * (rec['vat_per']) if less_vat_per != 0 else rec['vat_per'])                        
-                    append_other_taxes = sign * rec['other_taxes'] if not changes else (sign * (self.decimal(other_taxes - oth_taxes)) if less_other_taxes != 0 else other_taxes)                    
-                    append_total = sign * rec['total'] if not changes else (sign * (self.decimal(append_taxed + append_not_taxed + append_vat_10 + append_vat_21 + append_vat_27+ append_vat_per + append_other_taxes)))
-                    totals['taxed'] += - append_taxed
+                    append_other_taxes = sign * rec['other_taxes'] if not changes else (sign * (self.decimal(other_taxes - oth_taxes)) if less_other_taxes != 0 else sign * other_taxes)                    
+                    less_total = self.decimal(append_taxed + append_not_taxed + append_vat_10 + append_vat_21 + append_vat_27+ append_vat_per + append_other_taxes)
+                    less_total = - less_total if journal_type == 'sale' else less_total
+                    append_total = sign * rec['total'] if not changes else sign * (less_total)
+                    totals['taxed'] += append_taxed
                     totals['not_taxed'] += rec['not_taxed']
 
                     for item in dynamic_columns:
                         totals[item] += rec[item]
-                    totals['vat_10'] += - append_vat_10
-                    totals['vat_21'] += - append_vat_21
+                    totals['vat_10'] += append_vat_10
+                    totals['vat_21'] += append_vat_21
 
-                    totals['vat_27'] += - append_vat_27
+                    totals['vat_27'] += append_vat_27
                     totals['vat_per'] += rec['vat_per']
-                    totals['other_taxes'] += - append_other_taxes
+                    totals['other_taxes'] += append_other_taxes
                     totals['total'] += append_total
-
+                    
                     lines.append({
                         'id': rec['id'],
                         'name': format_date(self.env, rec['invoice_date']),
@@ -270,16 +269,16 @@ class L10nARVatBook(models.AbstractModel):
                 {'name': ''},
                 {'name': ''},
                 {'name': ''},
-                {'name': self.format_value(sign * totals['taxed'])},
-                {'name': self.format_value(sign * totals['not_taxed'])},
+                {'name': self.format_value(totals['taxed'])},
+                {'name': self.format_value(totals['not_taxed'])},
                 ] + [
-                    {'name': self.format_value(sign * totals[item])} for item in dynamic_columns] + [
-                {'name': self.format_value(sign * totals['vat_10'])},
-                {'name': self.format_value(sign * totals['vat_21'])},
-                {'name': self.format_value(sign * totals['vat_27'])},
-                {'name': self.format_value(sign * totals['vat_per'])},
-                {'name': self.format_value(sign * totals['other_taxes'])},
-                {'name': self.format_value(sign * totals['total'])},
+                    {'name': self.format_value(totals[item])} for item in dynamic_columns] + [
+                {'name': self.format_value(totals['vat_10'])},
+                {'name': self.format_value(totals['vat_21'])},
+                {'name': self.format_value(totals['vat_27'])},
+                {'name': self.format_value(totals['vat_per'])},
+                {'name': self.format_value(totals['other_taxes'])},
+                {'name': self.format_value(totals['total'])},
             ],
         })
 
