@@ -117,25 +117,28 @@ class L10nARVatBook(models.AbstractModel):
         return total_less
     
     def decimal(self, value):
-        decimals = 0
         str_value = str(value)
         str_decimals = str_value.find('.')
         two_decimals_int = int(value * 100)
-        two_decimals_float = two_decimals_int/100
-        
+        two_decimals_float = two_decimals_int / 100
+
         if str_decimals == -1:
             len_decimals = 0
         else:
             len_decimals = len(str_value[str_decimals + 1:])
+        
         if len_decimals < 3:
             return two_decimals_float
-        elif len_decimals > 3:
-            decimals = int(str_value[str_decimals + 3: str_decimals + 4])
-        elif len_decimals == 3:
-            decimals = int(str_value[str_decimals + 3: str_decimals + 3]) * 10 
-        if decimals > 50:
-            two_decimals_float += 0.01
-        return two_decimals_float
+        else:
+            try:
+                third_decimal = int(str_value[str_decimals + 3])
+            except:
+                third_decimal = 0
+
+            if third_decimal >= 5:
+                two_decimals_float += 0.01
+
+            return two_decimals_float
     
     @api.model
     def _get_lines(self, options, line_id=None):        
