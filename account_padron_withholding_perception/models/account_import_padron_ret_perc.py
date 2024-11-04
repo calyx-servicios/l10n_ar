@@ -51,7 +51,8 @@ class AccountImportPadronRetPerc(models.Model):
                 partner_dic = context['partner_dic']
             else:
                 for partner_obj in import_obj.padron_type_id.line_partner_ids:
-                    partner_dic[partner_obj.vat] = partner_obj
+                    if partner_obj.vat:
+                        partner_dic[partner_obj.vat] = partner_obj
             date_from = str(import_obj.default_date_from)[
                 :4] + str(import_obj.default_date_from)[5:7] + str(import_obj.default_date_from)[8:10]
             date_to = str(import_obj.default_date_to)[
