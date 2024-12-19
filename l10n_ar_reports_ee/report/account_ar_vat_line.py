@@ -152,9 +152,12 @@ LEFT JOIN
 LEFT JOIN
     l10n_ar_afip_responsibility_type AS art
     ON am.l10n_ar_afip_responsibility_type_id = art.id
+    LEFT JOIN l10n_latam_document_type doc_type ON doc_type.id = am.l10n_latam_document_type_id
+
 WHERE
     (aml.tax_line_id is not null or btg.l10n_ar_vat_afip_code is not null)
     and am.type in ('out_invoice', 'in_invoice', 'out_refund', 'in_refund')
+    AND doc_type.code != '4'
 GROUP BY
     am.id, art.name, rp.id, lit.id
 ORDER BY
